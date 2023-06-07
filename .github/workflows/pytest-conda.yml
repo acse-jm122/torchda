@@ -24,5 +24,4 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pip install .
           pytest -p no:warnings tests/
