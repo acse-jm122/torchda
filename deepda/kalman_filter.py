@@ -6,7 +6,6 @@ __all__ = ["KF", "EnKF"]
 
 def KF(
     n_steps,
-    dt,
     nobs,
     time_obs,
     gap,
@@ -54,7 +53,6 @@ def KF(
 
 def EnKF(
     n_steps,
-    dt,
     nobs,
     time_obs,
     gap,
