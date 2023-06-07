@@ -1,8 +1,8 @@
 import doctest
-from deepda import EnKF
+from deepda import kalman_filter
 
 
-def test_myEnKF_docstrings():
+def test_kalman_filter_docstrings():
     assert (
-        doctest.testmod(EnKF).failed == 0
-    ), "Failed docstring tests in deepda.EnKF :("
+        doctest.testmod(kalman_filter).failed == 0
+    ), "Failed docstring tests in deepda.kalman_filter :("
