@@ -21,12 +21,12 @@ def KF(
     """
     Implementation of the Kalman filter
     """
-    x_estimates = torch.zeros((3, n_steps + 1), dtype=float)
+    x_estimates = torch.zeros((x0.size(0), n_steps + 1), dtype=float)
     sR = torch.sqrt(R)
     sP = torch.sqrt(P0)
 
     # construct initial state
-    Xp = x0 + (sP @ torch.randn(size=(3,), dtype=float))
+    Xp = x0 + (sP @ torch.randn(size=(x0.size(0),), dtype=float))
 
     current_time = 0
     for iobs in range(nobs + 1):
@@ -70,16 +70,16 @@ def EnKF(
     Implementation of the Ensemble Kalman Filter
     See e.g. Evensen, Ocean Dynamics (2003), Eqs. 44--54
     """
-    x_ave = torch.zeros((3, n_steps + 1), dtype=float)
-    x_ens = torch.zeros((3, n_steps + 1, Ne), dtype=float)
+    x_ave = torch.zeros((x0.size(0), n_steps + 1), dtype=float)
+    x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne), dtype=float)
     D = torch.zeros((H.size(0), Ne), dtype=float)
-    Xp = torch.zeros((3, Ne), dtype=float)
+    Xp = torch.zeros((x0.size(0), Ne), dtype=float)
     sR = torch.sqrt(R)
     sP = torch.sqrt(P0)
 
     # construct initial ensemble
     Xe = x0.tile(Ne).reshape((-1, Ne)) + (
-        sP @ torch.randn(size=(3, Ne), dtype=float))
+        sP @ torch.randn(size=(x0.size(0), Ne), dtype=float))
     one_over_Ne_minus_one = 1.0 / (Ne - 1.0)
     one_over_Ne = 1.0 / Ne
 
