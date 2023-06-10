@@ -189,7 +189,7 @@ def EAKF(
             raise TypeError(
                 f"Only support types: [Callable, torch.Tensor], \
                     but given {type(H)=}"
-        )
+            )
         He_bar = one_over_Ne * He.sum(dim=1)
         Xe_bar = one_over_Ne * Xe.sum(dim=1)
         A = Xe - Xe_bar.tile(Ne).reshape((-1, Ne))
