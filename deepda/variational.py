@@ -20,10 +20,11 @@ def apply_3DVar(
     """
     new_x0 = torch.nn.Parameter(xb.clone().detach())
 
-    J_sum = lambda x: torch.sum(
-        (x - xb).unsqueeze(1).T @ torch.linalg.solve(B, (x - xb))
-        + (y - H(x)).unsqueeze(1).T @ torch.linalg.solve(R, y - H(x))
-    )
+    def J_sum(x: torch.Tensor) -> torch.Tensor:
+        return torch.sum(
+            (x - xb).unsqueeze(1).T @ torch.linalg.solve(B, (x - xb))
+            + (y - H(x)).unsqueeze(1).T @ torch.linalg.solve(R, y - H(x))
+        )
 
     n = 0
     trainer = torch.optim.Adam([new_x0], lr=learning_rate)
@@ -63,10 +64,11 @@ def apply_4DVar(
     """
     new_x0 = torch.nn.Parameter(xb.clone().detach())
 
-    J_sum = lambda x, y: torch.sum(
-        (x - xb).unsqueeze(1).T @ torch.linalg.solve(B, (x - xb))
-        + (y - H(x)).unsqueeze(1).T @ torch.linalg.solve(R, y - H(x))
-    )
+    def J_sum(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        return torch.sum(
+            (x - xb).unsqueeze(1).T @ torch.linalg.solve(B, (x - xb))
+            + (y - H(x)).unsqueeze(1).T @ torch.linalg.solve(R, y - H(x))
+        )
 
     n = 0
     trainer = torch.optim.Adam([new_x0], lr=learning_rate)
