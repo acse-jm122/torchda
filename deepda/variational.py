@@ -20,17 +20,16 @@ def apply_3DVar(
     """
     new_x0 = torch.nn.Parameter(xb.clone().detach())
 
-    def J_sum(x: torch.Tensor) -> torch.Tensor:
-        return torch.sum(
-            (x - xb).unsqueeze(1).T @ torch.linalg.solve(B, (x - xb))
-            + (y - H(x)).unsqueeze(1).T @ torch.linalg.solve(R, y - H(x))
-        )
-
     n = 0
     trainer = torch.optim.Adam([new_x0], lr=learning_rate)
     while True:
         trainer.zero_grad(set_to_none=True)
-        loss = J_sum(new_x0)
+        loss = torch.sum(
+            (new_x0 - xb).unsqueeze(1).T @
+            torch.linalg.solve(B, (new_x0 - xb))
+            + (y - H(new_x0)).unsqueeze(1).T @
+            torch.linalg.solve(R, y - H(new_x0))
+        )
         loss.backward()
         grad_norm = torch.norm(new_x0.grad)
         if logging:
@@ -64,12 +63,6 @@ def apply_4DVar(
     """
     new_x0 = torch.nn.Parameter(xb.clone().detach())
 
-    def J_sum(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return torch.sum(
-            (x - xb).unsqueeze(1).T @ torch.linalg.solve(B, (x - xb))
-            + (y - H(x)).unsqueeze(1).T @ torch.linalg.solve(R, y - H(x))
-        )
-
     n = 0
     trainer = torch.optim.Adam([new_x0], lr=learning_rate)
     while True:
@@ -81,7 +74,11 @@ def apply_4DVar(
             time_fw = torch.linspace(current_time, time_obs[iobs], gap + 1)
             xf = M(Xp, time_fw, *model_args)
             Xp = xf[:, -1]
-            total_loss += J_sum(xf[:, -1], y[:, iobs])
+            total_loss += torch.sum(
+                (Xp - xb).unsqueeze(1).T @ torch.linalg.solve(B, (Xp - xb))
+                + (y[:, iobs] - H(Xp)).unsqueeze(1).T
+                @ torch.linalg.solve(R, y[:, iobs] - H(Xp))
+            )
             current_time = time_obs[iobs]
         total_loss.backward()
         grad_norm = torch.norm(new_x0.grad)
