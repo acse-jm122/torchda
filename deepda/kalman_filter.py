@@ -20,12 +20,12 @@ def KF(
     """
     Implementation of the Kalman Filter (constant P assumption)
     """
-    x_estimates = torch.zeros((x0.size(0), n_steps + 1), dtype=float)
+    x_estimates = torch.zeros((x0.size(0), n_steps + 1))
     sP = torch.sqrt(P0)
     P = P0
 
     # construct initial state
-    Xp = x0 + (sP @ torch.randn(size=(x0.size(0),), dtype=float))
+    Xp = x0 + (sP @ torch.randn(size=(x0.size(0),)))
 
     current_time = 0
     for iobs in range(nobs + 1):
@@ -82,23 +82,23 @@ def EnKF(
     Implementation of the Ensemble Kalman Filter
     See e.g. Evensen, Ocean Dynamics (2003), Eqs. 44--54
     """
-    x_ave = torch.zeros((x0.size(0), n_steps + 1), dtype=float)
-    x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne), dtype=float)
-    D = torch.zeros((H.size(0), Ne), dtype=float)
-    Xp = torch.zeros((x0.size(0), Ne), dtype=float)
+    x_ave = torch.zeros((x0.size(0), n_steps + 1))
+    x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne))
+    D = torch.zeros((H.size(0), Ne))
+    Xp = torch.zeros((x0.size(0), Ne))
     sR = torch.sqrt(R)
     sP = torch.sqrt(P0)
 
     # construct initial ensemble
     Xe = x0.tile(Ne).reshape((-1, Ne)) + (
-        sP @ torch.randn(size=(x0.size(0), Ne), dtype=float)
+        sP @ torch.randn(size=(x0.size(0), Ne))
     )
     one_over_Ne_minus_one = 1.0 / (Ne - 1.0)
     one_over_Ne = 1.0 / Ne
     one_plus_inflation_factor = 1.0 + inflation_factor
 
     current_time = 0
-    running_mean = torch.empty((3, gap + 1), dtype=float)
+    running_mean = torch.empty((x0.size(0), gap + 1))
     for iobs in range(nobs + 1):
         istart = iobs * gap
         istop = istart + gap + 1
@@ -154,15 +154,16 @@ def EAKF(
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """
     Implementation of the Ensemble Adjusted Kalman Filter
+    See e.g. Anderson, Monthly Weather Review (2001)
     """
-    x_ave = torch.zeros((x0.size(0), n_steps + 1), dtype=float)
-    x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne), dtype=float)
+    x_ave = torch.zeros((x0.size(0), n_steps + 1))
+    x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne))
     Xe = x0.tile(Ne).reshape((-1, Ne)) + (
-        torch.sqrt(P0) @ torch.randn(size=(x0.size(0), Ne), dtype=float)
+        torch.sqrt(P0) @ torch.randn(size=(x0.size(0), Ne))
     )
     one_over_Ne = 1.0 / Ne
     current_time = 0
-    running_mean = torch.empty((3, gap + 1), dtype=float)
+    running_mean = torch.empty((x0.size(0), gap + 1))
     for iobs in range(nobs + 1):
         istart = iobs * gap
         istop = istart + gap + 1

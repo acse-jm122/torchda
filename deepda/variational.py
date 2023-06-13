@@ -25,9 +25,9 @@ def apply_3DVar(
     while True:
         trainer.zero_grad(set_to_none=True)
         loss = torch.sum(
-            (new_x0 - xb).unsqueeze(1).T @
+            (new_x0 - xb).reshape((1, -1)) @
             torch.linalg.solve(B, (new_x0 - xb))
-            + (y - H(new_x0)).unsqueeze(1).T @
+            + (y - H(new_x0)).reshape((1, -1)) @
             torch.linalg.solve(R, y - H(new_x0))
         )
         loss.backward()
@@ -75,8 +75,8 @@ def apply_4DVar(
             xf = M(Xp, time_fw, *model_args)
             Xp = xf[:, -1]
             total_loss += torch.sum(
-                (Xp - xb).unsqueeze(1).T @ torch.linalg.solve(B, (Xp - xb))
-                + (y[:, iobs] - H(Xp)).unsqueeze(1).T
+                (Xp - xb).reshape((1, -1)) @ torch.linalg.solve(B, (Xp - xb))
+                + (y[:, iobs] - H(Xp)).reshape((1, -1))
                 @ torch.linalg.solve(R, y[:, iobs] - H(Xp))
             )
             current_time = time_obs[iobs]

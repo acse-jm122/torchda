@@ -19,7 +19,7 @@ def forwardModel_r(xt0: torch.Tensor, time: torch.Tensor,
     """
 
     y0 = xt0
-    y = torch.empty((xt0.size(0), time.size(0)), dtype=float)
+    y = torch.empty((xt0.size(0), time.size(0)))
     y[:, 0] = y0
     for i in range(1, int(time.size(0))):
         dy = Lorenz63(y0, prandtl, rayleigh, b)
