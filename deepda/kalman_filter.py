@@ -84,7 +84,7 @@ def EnKF(
     """
     x_ave = torch.zeros((x0.size(0), n_steps + 1))
     x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne))
-    D = torch.zeros((H.size(0), Ne))
+    D = torch.zeros((y.size(0), Ne))
     Xp = torch.zeros((x0.size(0), Ne))
     sR = torch.sqrt(R)
     sP = torch.sqrt(P0)
@@ -119,7 +119,7 @@ def EnKF(
             Xp[:, e] = xf[:, -1]
             running_mean = running_mean + xf
             # Noise the obs (Burgers et al, 1998)
-            D[:, e] = y[:, iobs] + (sR @ torch.randn(size=(H.size(0),)))
+            D[:, e] = y[:, iobs] + (sR @ torch.randn(size=(y.size(0),)))
         E = torch.mean(Xp, dim=1)
         A = Xp - E.tile(Ne).reshape((-1, Ne))
         Pe = one_plus_inflation_factor * one_over_Ne_minus_one * (A @ A.T)
