@@ -20,12 +20,13 @@ def KF(
     """
     Implementation of the Kalman Filter (constant P assumption)
     """
-    x_estimates = torch.zeros((x0.size(0), n_steps + 1))
-    sP = torch.sqrt(P0)
+    device = x0.device
+    x_estimates = torch.zeros((x0.size(0), n_steps + 1), device=device)
+    sP = P0.sqrt()
     P = P0
 
     # construct initial state
-    Xp = x0 + (sP @ torch.randn(size=(x0.size(0),)))
+    Xp = x0 + (sP @ torch.randn(size=(x0.size(0),), device=device))
 
     current_time = 0
     for iobs in range(nobs + 1):
@@ -36,7 +37,9 @@ def KF(
         if isinstance(M, torch.Tensor):
             xf = M @ Xp
         elif isinstance(M, Callable):
-            time_fw = torch.linspace(current_time, time_obs[iobs], gap + 1)
+            time_fw = torch.linspace(
+                current_time, time_obs[iobs], gap + 1, device=device
+            )
             xf = M(Xp, time_fw, *args)
         else:
             raise TypeError(
@@ -49,7 +52,7 @@ def KF(
             P = M @ P @ M.T
             K = P @ H.T @ torch.linalg.pinv((H @ P @ H.T) + R)
             Xp = Xp + (K @ (y[:, iobs] - (H @ Xp)))
-            P = (torch.eye(x0.size(0)) - (K @ H)) @ P
+            P = (torch.eye(x0.size(0), device=device) - (K @ H)) @ P
         else:  # isinstance(M, Callable)
             K = (H @ P @ H.T) + R
             w = torch.linalg.solve(K, y[:, iobs] - (H @ Xp))
@@ -82,28 +85,31 @@ def EnKF(
     Implementation of the Ensemble Kalman Filter
     See e.g. Evensen, Ocean Dynamics (2003), Eqs. 44--54
     """
-    x_ave = torch.zeros((x0.size(0), n_steps + 1))
-    x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne))
-    D = torch.zeros((y.size(0), Ne))
-    Xp = torch.zeros((x0.size(0), Ne))
-    sR = torch.sqrt(R)
-    sP = torch.sqrt(P0)
+    device = x0.device
+    x_ave = torch.zeros((x0.size(0), n_steps + 1), device=device)
+    x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne), device=device)
+    D = torch.zeros((y.size(0), Ne), device=device)
+    Xp = torch.zeros((x0.size(0), Ne), device=device)
+    sR = R.sqrt()
+    sP = P0.sqrt()
 
     # construct initial ensemble
     Xe = x0.tile(Ne).reshape((-1, Ne)) + (
-        sP @ torch.randn(size=(x0.size(0), Ne))
+        sP @ torch.randn(size=(x0.size(0), Ne), device=device)
     )
     one_over_Ne_minus_one = 1.0 / (Ne - 1.0)
     one_over_Ne = 1.0 / Ne
     one_plus_inflation_factor = 1.0 + inflation_factor
 
     current_time = 0
-    running_mean = torch.empty((x0.size(0), gap + 1))
+    running_mean = torch.empty((x0.size(0), gap + 1), device=device)
     for iobs in range(nobs + 1):
         istart = iobs * gap
         istop = istart + gap + 1
         running_mean.zero_()
-        time_fw = torch.linspace(current_time, time_obs[iobs], gap + 1)
+        time_fw = torch.linspace(
+            current_time, time_obs[iobs], gap + 1, device=device
+        )
         for e in range(Ne):
             # prediction phase for each ensemble member
             if isinstance(M, Callable):
@@ -119,7 +125,9 @@ def EnKF(
             Xp[:, e] = xf[:, -1]
             running_mean = running_mean + xf
             # Noise the obs (Burgers et al, 1998)
-            D[:, e] = y[:, iobs] + (sR @ torch.randn(size=(y.size(0),)))
+            D[:, e] = y[:, iobs] + (
+                sR @ torch.randn(size=(y.size(0),), device=device)
+            )
         E = torch.mean(Xp, dim=1)
         A = Xp - E.tile(Ne).reshape((-1, Ne))
         Pe = one_plus_inflation_factor * one_over_Ne_minus_one * (A @ A.T)
@@ -156,19 +164,22 @@ def EAKF(
     Implementation of the Ensemble Adjusted Kalman Filter
     See e.g. Anderson, Monthly Weather Review (2001)
     """
-    x_ave = torch.zeros((x0.size(0), n_steps + 1))
-    x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne))
+    device = x0.device
+    x_ave = torch.zeros((x0.size(0), n_steps + 1), device=device)
+    x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne), device=device)
     Xe = x0.tile(Ne).reshape((-1, Ne)) + (
-        torch.sqrt(P0) @ torch.randn(size=(x0.size(0), Ne))
+        P0.sqrt() @ torch.randn(size=(x0.size(0), Ne), device=device)
     )
     one_over_Ne = 1.0 / Ne
     current_time = 0
-    running_mean = torch.empty((x0.size(0), gap + 1))
+    running_mean = torch.empty((x0.size(0), gap + 1), device=device)
     for iobs in range(nobs + 1):
         istart = iobs * gap
         istop = istart + gap + 1
         running_mean.zero_()
-        time_fw = torch.linspace(current_time, time_obs[iobs], gap + 1)
+        time_fw = torch.linspace(
+            current_time, time_obs[iobs], gap + 1, device=device
+        )
         for e in range(Ne):
             if isinstance(M, Callable):
                 xf = M(Xe[:, e], time_fw, *args)

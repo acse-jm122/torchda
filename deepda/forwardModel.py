@@ -5,7 +5,7 @@ __all__ = ["Lorenz63", "forwardModel_r"]
 
 def Lorenz63(y, sig, rho, beta):
     """Lorenz '63 model"""
-    out = torch.zeros_like(y)
+    out = torch.zeros_like(y, device=y.device)
     out[0] = sig * (y[1] - y[0])
     out[1] = y[0] * (rho - y[2]) - y[1]
     out[2] = y[0] * y[1] - beta * y[2]
@@ -19,7 +19,7 @@ def forwardModel_r(xt0: torch.Tensor, time: torch.Tensor,
     """
 
     y0 = xt0
-    y = torch.empty((xt0.size(0), time.size(0)))
+    y = torch.empty((xt0.size(0), time.size(0)), device=xt0.device)
     y[:, 0] = y0
     for i in range(1, int(time.size(0))):
         dy = Lorenz63(y0, prandtl, rayleigh, b)
