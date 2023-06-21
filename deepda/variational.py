@@ -23,11 +23,13 @@ def apply_3DVar(
     trainer = torch.optim.Adam([new_x0], lr=learning_rate)
     for n in range(max_iterations):
         trainer.zero_grad(set_to_none=True)
+        new_x0_minus_xb = new_x0 - xb
+        y_minus_H_new_x0 = y - H(new_x0)
         loss = (
-            (new_x0 - xb).reshape((1, -1)) @
-            torch.linalg.solve(B, (new_x0 - xb)).reshape((-1, 1))
-            + (y - H(new_x0)).reshape((1, -1)) @
-            torch.linalg.solve(R, y - H(new_x0)).reshape((-1, 1))
+            new_x0_minus_xb.reshape((1, -1)) @
+            torch.linalg.solve(B, new_x0_minus_xb).reshape((-1, 1))
+            + y_minus_H_new_x0.reshape((1, -1)) @
+            torch.linalg.solve(R, y_minus_H_new_x0).reshape((-1, 1))
         )
         loss.backward()
         grad_norm = torch.norm(new_x0.grad)
@@ -66,18 +68,20 @@ def apply_4DVar(
         trainer.zero_grad(set_to_none=True)
         current_time = 0
         total_loss = 0
-        Xp = new_x0
+        xp = new_x0
         for iobs in range(nobs + 1):
             time_fw = torch.linspace(
                 current_time, time_obs[iobs], gap + 1, device=xb.device
             )
-            xf = M(Xp, time_fw, *model_args)
-            Xp = xf[:, -1]
+            xf = M(xp, time_fw, *model_args)
+            xp = xf[:, -1]
+            xp_minus_xb = xp - xb
+            y_minus_H_xb = y[:, iobs] - H(xp)
             total_loss += (
-                (Xp - xb).reshape((1, -1)) @
-                torch.linalg.solve(B, (Xp - xb)).reshape((-1, 1))
-                + (y[:, iobs] - H(Xp)).reshape((1, -1)) @
-                torch.linalg.solve(R, y[:, iobs] - H(Xp)).reshape((-1, 1))
+                xp_minus_xb.reshape((1, -1)) @
+                torch.linalg.solve(B, xp_minus_xb).reshape((-1, 1))
+                + y_minus_H_xb.reshape((1, -1)) @
+                torch.linalg.solve(R, y_minus_H_xb).reshape((-1, 1))
             )
             current_time = time_obs[iobs]
         total_loss.backward()
