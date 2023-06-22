@@ -67,20 +67,19 @@ def apply_4DVar(
     for n in range(max_iterations):
         trainer.zero_grad(set_to_none=True)
         current_time = 0
-        total_loss = 0
         xp = new_x0
+        xp_minus_xb = xp - xb
+        total_loss = (xp_minus_xb.reshape((1, -1)) @
+                      torch.linalg.solve(B, xp_minus_xb).reshape((-1, 1)))
         for iobs in range(nobs + 1):
             time_fw = torch.linspace(
                 current_time, time_obs[iobs], gap + 1, device=xb.device
             )
             xf = M(xp, time_fw, *model_args)
             xp = xf[:, -1]
-            xp_minus_xb = xp - xb
             y_minus_H_xb = y[:, iobs] - H(xp)
             total_loss += (
-                xp_minus_xb.reshape((1, -1)) @
-                torch.linalg.solve(B, xp_minus_xb).reshape((-1, 1))
-                + y_minus_H_xb.reshape((1, -1)) @
+                y_minus_H_xb.reshape((1, -1)) @
                 torch.linalg.solve(R, y_minus_H_xb).reshape((-1, 1))
             )
             current_time = time_obs[iobs]
