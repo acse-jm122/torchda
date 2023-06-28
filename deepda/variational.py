@@ -36,7 +36,7 @@ def apply_3DVar(
     for n in range(max_iterations):
         trainer.zero_grad(set_to_none=True)
         if single_xb:
-            loss = J(xb, y)
+            loss = J(new_x0, xb, y)
         else:
             loss = 0
             sequence_length = xb.size(1) if batch_first else xb.size(0)
