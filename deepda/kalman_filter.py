@@ -15,7 +15,8 @@ def KF(
     y: torch.Tensor,
     x0: torch.Tensor,
     P0: torch.Tensor,
-    args: tuple | None = None,
+    start_time: float = 0.0,
+    args: tuple = (None,),
 ) -> torch.Tensor:
     """
     Implementation of the Kalman Filter (constant P assumption)
@@ -28,8 +29,8 @@ def KF(
     # construct initial state
     Xp = x0 + (sP @ torch.randn(size=(x0.size(0),), device=device))
 
-    current_time = 0
-    for iobs in range(nobs + 1):
+    current_time = start_time
+    for iobs in range(nobs):
         istart = iobs * gap
         istop = istart + gap + 1
 
@@ -78,8 +79,9 @@ def EnKF(
     x0: torch.Tensor,
     P0: torch.Tensor,
     inflation_factor: float = 0.0,
-    localization: torch.Tensor | None = None,
-    args: tuple | None = None,
+    localization: torch.Tensor = None,
+    start_time: float = 0.0,
+    args: tuple = (None,),
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """
     Implementation of the Ensemble Kalman Filter
@@ -101,9 +103,9 @@ def EnKF(
     one_over_Ne = 1.0 / Ne
     one_plus_inflation_factor = 1.0 + inflation_factor
 
-    current_time = 0
+    current_time = start_time
     running_mean = torch.empty((x0.size(0), gap + 1), device=device)
-    for iobs in range(nobs + 1):
+    for iobs in range(nobs):
         istart = iobs * gap
         istop = istart + gap + 1
         running_mean.zero_()
@@ -158,7 +160,8 @@ def EAKF(
     y: torch.Tensor,
     x0: torch.Tensor,
     P0: torch.Tensor,
-    args: tuple | None = None,
+    start_time: float = 0.0,
+    args: tuple = (None,),
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """
     Implementation of the Ensemble Adjusted Kalman Filter
@@ -171,9 +174,9 @@ def EAKF(
         P0.sqrt() @ torch.randn(size=(x0.size(0), Ne), device=device)
     )
     one_over_Ne = 1.0 / Ne
-    current_time = 0
+    current_time = start_time
     running_mean = torch.empty((x0.size(0), gap + 1), device=device)
-    for iobs in range(nobs + 1):
+    for iobs in range(nobs):
         istart = iobs * gap
         istop = istart + gap + 1
         running_mean.zero_()

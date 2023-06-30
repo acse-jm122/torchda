@@ -13,7 +13,7 @@ def apply_3DVar(
     threshold: float = 1e-5,
     max_iterations: int = 1000,
     learning_rate: float = 1e-3,
-    single_xb: bool = True,
+    is_vector_xb: bool = True,
     batch_first: bool = True,
     logging: bool = True,
 ) -> torch.Tensor:
@@ -35,7 +35,7 @@ def apply_3DVar(
     trainer = torch.optim.Adam([new_x0], lr=learning_rate)
     for n in range(max_iterations):
         trainer.zero_grad(set_to_none=True)
-        if single_xb:
+        if is_vector_xb:
             loss = J(new_x0, xb, y)
         else:
             loss = 0
@@ -49,7 +49,10 @@ def apply_3DVar(
         loss.backward(retain_graph=True)
         grad_norm = torch.norm(new_x0.grad)
         if logging:
-            print(f"Iterations: {n}, Norm of J gradient: {grad_norm.item()}")
+            print(
+                f"Iterations: {n}, J: {loss.item()}, \
+Norm of J gradient: {grad_norm.item()}"
+            )
         if grad_norm <= threshold:
             break
         trainer.step()
@@ -67,11 +70,13 @@ def apply_4DVar(
     R: torch.Tensor,
     xb: torch.Tensor,
     y: torch.Tensor,
-    model_args: tuple | None = None,
+    start_time: float = 0.0,
+    model_args: tuple = (None,),
     threshold: float = 1e-5,
     max_iterations: int = 1000,
     learning_rate: float = 1e-3,
-    single_xb: bool = True,
+    is_vector_xb: bool = True,
+    is_vector_y: bool = True,
     batch_first: bool = True,
     logging: bool = True,
 ) -> torch.Tensor:
@@ -97,9 +102,9 @@ def apply_4DVar(
     trainer = torch.optim.Adam([new_x0], lr=learning_rate)
     for n in range(max_iterations):
         trainer.zero_grad(set_to_none=True)
-        current_time = 0
+        current_time = start_time
         xp = new_x0
-        if single_xb:
+        if is_vector_xb:
             total_loss = Jb(xp, xb)
         else:
             total_loss = 0
@@ -110,18 +115,28 @@ def apply_4DVar(
                     else (xp[i], xb[i])
                 )
                 total_loss += Jb(one_xp.ravel(), one_xb.ravel())
-        for iobs in range(nobs + 1):
+        for iobs in range(nobs):
             time_fw = torch.linspace(
                 current_time, time_obs[iobs], gap + 1, device=xb.device
             )
-            xf = M(xp, time_fw, *model_args)
-            xp = xf[:, -1]
-            total_loss += Jo(xp, y[:, iobs])
+            if is_vector_y:
+                xf = M(xp, time_fw, *model_args)
+                xp = xf[:, -1]
+                total_loss += Jo(xp, y[iobs])
+            else:
+                xp = M(xp, time_fw, *model_args)
+                sequence_length = xp.size(1) if batch_first else xp.size(0)
+                for i in range(sequence_length):
+                    one_xp = xp[:, i] if batch_first else xp[i]
+                    total_loss += Jo(one_xp.ravel(), y[iobs, i])
             current_time = time_obs[iobs]
-        total_loss.backward()
+        total_loss.backward(retain_graph=True)
         grad_norm = torch.norm(new_x0.grad)
         if logging:
-            print(f"Iterations: {n}, Norm of J gradient: {grad_norm.item()}")
+            print(
+                f"Iterations: {n}, J: {total_loss.item()}, \
+Norm of J gradient: {grad_norm.item()}"
+            )
         if grad_norm <= threshold:
             break
         trainer.step()
