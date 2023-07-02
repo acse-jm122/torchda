@@ -22,14 +22,14 @@ def apply_3DVar(
     """
     new_x0 = torch.nn.Parameter(xb.clone().detach())
 
-    def J(xp: torch.Tensor, xb: torch.Tensor, y: torch.Tensor):
-        new_x0_minus_xb = xp - xb
-        y_minus_H_new_x0 = y - H(xp)
+    def J(x0: torch.Tensor, xb: torch.Tensor, y: torch.Tensor):
+        x0_minus_xb = x0 - xb
+        y_minus_H_x0 = y - H(x0)
         return (
-            new_x0_minus_xb.reshape((1, -1)) @
-            torch.linalg.solve(B, new_x0_minus_xb).reshape((-1, 1))
-            + y_minus_H_new_x0.reshape((1, -1)) @
-            torch.linalg.solve(R, y_minus_H_new_x0).reshape((-1, 1))
+            x0_minus_xb.reshape((1, -1)) @
+            torch.linalg.solve(B, x0_minus_xb).reshape((-1, 1))
+            + y_minus_H_x0.reshape((1, -1)) @
+            torch.linalg.solve(R, y_minus_H_x0).reshape((-1, 1))
         )
 
     trainer = torch.optim.Adam([new_x0], lr=learning_rate)
@@ -41,17 +41,17 @@ def apply_3DVar(
             loss = 0
             sequence_length = xb.size(1) if batch_first else xb.size(0)
             for i in range(sequence_length):
-                one_xp, one_xb = (
+                one_x0, one_xb = (
                     (new_x0[:, i], xb[:, i]) if batch_first
                     else (new_x0[i], xb[i])
                 )
-                loss += J(one_xp.ravel(), one_xb.ravel(), y[i])
+                loss += J(one_x0.ravel(), one_xb.ravel(), y[i])
         loss.backward(retain_graph=True)
         grad_norm = torch.norm(new_x0.grad)
         if logging:
             print(
-                f"Iterations: {n}, J: {loss.item()}, \
-Norm of J gradient: {grad_norm.item()}"
+                f"Iterations: {n}, J: {loss.item()}, "
+                f"Norm of J gradient: {grad_norm.item()}"
             )
         if grad_norm <= threshold:
             break
@@ -93,10 +93,10 @@ def apply_4DVar(
         )
 
     def Jo(xp: torch.Tensor, y: torch.Tensor):
-        y_minus_H_xb = y - H(xp)
+        y_minus_H_xp = y - H(xp)
         return (
-            y_minus_H_xb.reshape((1, -1)) @
-            torch.linalg.solve(R, y_minus_H_xb).reshape((-1, 1))
+            y_minus_H_xp.reshape((1, -1)) @
+            torch.linalg.solve(R, y_minus_H_xp).reshape((-1, 1))
         )
 
     trainer = torch.optim.Adam([new_x0], lr=learning_rate)
@@ -134,8 +134,8 @@ def apply_4DVar(
         grad_norm = torch.norm(new_x0.grad)
         if logging:
             print(
-                f"Iterations: {n}, J: {total_loss.item()}, \
-Norm of J gradient: {grad_norm.item()}"
+                f"Iterations: {n}, J: {total_loss.item()}, "
+                f"Norm of J gradient: {grad_norm.item()}"
             )
         if grad_norm <= threshold:
             break
