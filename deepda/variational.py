@@ -85,11 +85,21 @@ def apply_4DVar(
     """
     new_x0 = torch.nn.Parameter(xb.clone().detach())
 
-    def Jb(xp: torch.Tensor, xb: torch.Tensor):
-        xp_minus_xb = xp - xb
+    # def Jb(x0: torch.Tensor, xb: torch.Tensor):
+    #     x0_minus_xb = x0 - xb
+    #     return (
+    #         x0_minus_xb.reshape((1, -1)) @
+    #         torch.linalg.solve(B, x0_minus_xb).reshape((-1, 1))
+    #     )
+
+    def Jb(x0: torch.Tensor, xb: torch.Tensor, y: torch.Tensor):
+        x0_minus_xb = x0 - xb
+        y_minus_H_x0 = y - H(x0)
         return (
-            xp_minus_xb.reshape((1, -1)) @
-            torch.linalg.solve(B, xp_minus_xb).reshape((-1, 1))
+            x0_minus_xb.reshape((1, -1)) @
+            torch.linalg.solve(B, x0_minus_xb).reshape((-1, 1))
+            + y_minus_H_x0.reshape((1, -1)) @
+            torch.linalg.solve(R, y_minus_H_x0).reshape((-1, 1))
         )
 
     def Jo(xp: torch.Tensor, y: torch.Tensor):
@@ -103,21 +113,21 @@ def apply_4DVar(
     for n in range(max_iterations):
         trainer.zero_grad(set_to_none=True)
         current_time = start_time
-        xp = new_x0
         if is_vector_xb:
-            total_loss = Jb(xp, xb)
+            total_loss = Jb(new_x0, xb, y[0])
         else:
             total_loss = 0
             sequence_length = xb.size(1) if batch_first else xb.size(0)
             for i in range(sequence_length):
-                one_xp, one_xb = (
-                    (xp[:, i], xb[:, i]) if batch_first
-                    else (xp[i], xb[i])
+                one_x0, one_xb = (
+                    (new_x0[:, i], xb[:, i]) if batch_first
+                    else (new_x0[i], xb[i])
                 )
-                total_loss += Jb(one_xp.ravel(), one_xb.ravel())
-        for iobs in range(nobs):
+                total_loss += Jb(one_x0.ravel(), one_xb.ravel(), y[0, i])
+        xp = new_x0
+        for iobs in range(1, nobs):
             time_fw = torch.linspace(
-                current_time, time_obs[iobs], gap + 1, device=xb.device
+                current_time, time_obs[iobs - 1], gap + 1, device=xb.device
             )
             if is_vector_y:
                 xf = M(xp, time_fw, *model_args)
@@ -129,7 +139,7 @@ def apply_4DVar(
                 for i in range(sequence_length):
                     one_xp = xp[:, i] if batch_first else xp[i]
                     total_loss += Jo(one_xp.ravel(), y[iobs, i])
-            current_time = time_obs[iobs]
+            current_time = time_obs[iobs - 1]
         total_loss.backward(retain_graph=True)
         grad_norm = torch.norm(new_x0.grad)
         if logging:
