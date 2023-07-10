@@ -73,7 +73,7 @@ def EnKF(
     gap: int,
     Ne: int,
     M: torch.Tensor | Callable,
-    H: torch.Tensor,
+    H: torch.Tensor | Callable,
     R: torch.Tensor,
     y: torch.Tensor,
     x0: torch.Tensor,
@@ -91,17 +91,24 @@ def EnKF(
     x_ave = torch.zeros((x0.size(0), n_steps + 1), device=device)
     x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne), device=device)
     D = torch.zeros((y.size(0), Ne), device=device)
+    sigmas_h = torch.zeros((y.size(0), Ne), device=device)
     Xp = torch.zeros((x0.size(0), Ne), device=device)
     sR = R.sqrt()
     sP = P0.sqrt()
 
     # construct initial ensemble
-    Xe = x0.tile(Ne).reshape((-1, Ne)) + (
+    Xe = x0.reshape((-1, 1)) + (
         sP @ torch.randn(size=(x0.size(0), Ne), device=device)
     )
     one_over_Ne_minus_one = 1.0 / (Ne - 1.0)
     one_over_Ne = 1.0 / Ne
     one_plus_inflation_factor = 1.0 + inflation_factor
+
+    def outer_product_sum(A, B=None):
+        if B is None:
+            B = A
+        outer = torch.einsum("ji,ki->ijk", A, B)
+        return torch.sum(outer, dim=0).T
 
     current_time = start_time
     running_mean = torch.empty((x0.size(0), gap + 1), device=device)
@@ -126,21 +133,37 @@ def EnKF(
             x_ens[:, istart:istop, e] = xf
             Xp[:, e] = xf[:, -1]
             running_mean = running_mean + xf
+            if isinstance(H, Callable):
+                sigmas_h[:, e] = H(Xe[:, e])
+            elif not isinstance(H, torch.Tensor):
+                raise TypeError(
+                    f"Only support types: [Callable, torch.Tensor], \
+                        but given {type(H)=}"
+                )
             # Noise the obs (Burgers et al, 1998)
             D[:, e] = y[:, iobs] + (
                 sR @ torch.randn(size=(y.size(0),), device=device)
             )
-        E = torch.mean(Xp, dim=1)
-        A = Xp - E.tile(Ne).reshape((-1, Ne))
-        Pe = one_plus_inflation_factor * one_over_Ne_minus_one * (A @ A.T)
-        if localization is not None:
-            Pe = localization * Pe
-        # Assembly of the Kalman gain matrix
-        K = (H @ Pe @ H.T) + R
-        # Solve
-        w = torch.linalg.solve(K, D - (H @ Xp))
-        # Update
-        Xe = Xp + (Pe @ H.T @ w)
+        E = torch.mean(Xp, dim=1).reshape((-1, 1))
+        if isinstance(H, torch.Tensor):
+            A = Xp - E
+            Pe = one_plus_inflation_factor * one_over_Ne_minus_one * (A @ A.T)
+            if localization is not None:
+                Pe = localization * Pe
+            # Assembly of the Kalman gain matrix
+            K = (H @ Pe @ H.T) + R
+            # Solve
+            w = torch.linalg.solve(K, D - (H @ Xp))
+            # Update
+            Xe = Xp + (Pe @ H.T @ w)
+        else:
+            z_mean = torch.mean(sigmas_h, dim=1).reshape((-1, 1))
+            P_zz = outer_product_sum(sigmas_h - z_mean) * one_over_Ne_minus_one + R
+            P_xz = outer_product_sum(Xp - E, sigmas_h - z_mean) * one_over_Ne_minus_one
+            K = P_xz @ torch.linalg.pinv(P_zz)
+            e_r = sR @ torch.randn(size=(y.size(0),), device=device)
+            for e in range(Ne):
+                Xe[:, e] = Xp[:, e] + K @ (y[:, iobs] + e_r - sigmas_h[:, e])
         running_mean = one_over_Ne * running_mean
         x_ave[:, istart:istop] = running_mean
         current_time = time_obs[iobs]
