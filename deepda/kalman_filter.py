@@ -72,14 +72,12 @@ def EnKF(
     time_obs: torch.Tensor,
     gap: int,
     Ne: int,
-    M: Callable,
-    H: Callable,
+    M: torch.Tensor | Callable,
+    H: torch.Tensor | Callable,
     R: torch.Tensor,
     y: torch.Tensor,
     x0: torch.Tensor,
     P0: torch.Tensor,
-    inflation_factor: float = 0.0,
-    localization: torch.Tensor = None,
     start_time: float = 0.0,
     args: tuple = (None,),
 ) -> tuple[torch.Tensor, torch.Tensor]:
@@ -101,7 +99,6 @@ def EnKF(
     )
     one_over_Ne_minus_one = 1.0 / (Ne - 1.0)
     one_over_Ne = 1.0 / Ne
-    one_plus_inflation_factor = 1.0 + inflation_factor
 
     current_time = start_time
     running_mean = torch.empty((x0.size(0), gap + 1), device=device)
@@ -123,10 +120,6 @@ def EnKF(
                 sR @ torch.randn(size=(y.size(0),), device=device)
             )
         E = torch.mean(Xp, dim=1).reshape((-1, 1))
-        A = Xp - E
-        Pe = one_plus_inflation_factor * one_over_Ne_minus_one * (A @ A.T)
-        if localization is not None:
-            Pe = localization * Pe
         if isinstance(H, Callable):
             Xh = H(Xp)
             z_mean = torch.mean(Xh, dim=1).reshape((-1, 1))
@@ -138,6 +131,8 @@ def EnKF(
             Pxz = one_over_Ne_minus_one * ((Xp - E) @ Xh_minus_z_mean.T)
             Xe = Xp + Pxz @ torch.linalg.solve(Pzz, D - Xh)
         elif isinstance(H, torch.Tensor):
+            A = Xp - E
+            Pe = one_over_Ne_minus_one * (A @ A.T)
             # Assembly of the Kalman gain matrix
             K = (H @ Pe @ H.T) + R
             # Solve
