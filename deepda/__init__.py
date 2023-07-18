@@ -1,7 +1,6 @@
 import contextlib
 from pkg_resources import DistributionNotFound, get_distribution
 
-from .forwardModel import *  # noqa
 from .kalman_filter import *  # noqa
 from .variational import *  # noqa
 

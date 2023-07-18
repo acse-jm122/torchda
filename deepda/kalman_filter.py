@@ -1,20 +1,20 @@
 import torch
 from typing import Callable
 
-__all__ = ["KF", "EnKF"]
+__all__ = ["apply_KF", "apply_EnKF_once", "apply_EnKF"]
 
 
-def KF(
+def apply_KF(
     n_steps: int,
     nobs: int,
     time_obs: torch.Tensor,
     gap: int,
     M: torch.Tensor | Callable,
     H: torch.Tensor,
-    R: torch.Tensor,
-    y: torch.Tensor,
-    x0: torch.Tensor,
     P0: torch.Tensor,
+    R: torch.Tensor,
+    x0: torch.Tensor,
+    y: torch.Tensor,
     start_time: float = 0.0,
     args: tuple = (None,),
 ) -> torch.Tensor:
@@ -23,11 +23,10 @@ def KF(
     """
     device = x0.device
     x_estimates = torch.zeros((x0.size(0), n_steps + 1), device=device)
-    sP = P0.sqrt()
     P = P0
 
     # construct initial state
-    Xp = x0 + (sP @ torch.randn(size=(x0.size(0),), device=device))
+    Xp = x0 + (P0.sqrt() @ torch.randn(size=(x0.size(0),), device=device))
 
     current_time = start_time
     for iobs in range(nobs):
@@ -66,7 +65,53 @@ def KF(
     return x_estimates
 
 
-def EnKF(
+def apply_EnKF_once(
+    Ne: int,
+    H: torch.Tensor | Callable,
+    R: torch.Tensor,
+    Xp: torch.Tensor,
+    y: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor]:
+
+    device = Xp.device
+    sR = R.sqrt()
+
+    one_over_Ne_minus_one = 1.0 / (Ne - 1.0)
+
+    # Noise the obs (Burgers et al, 1998)
+    D = y.reshape((-1, 1)) + (
+        sR @ torch.randn(size=(y.size(0), Ne), device=device)
+    )
+    E = torch.mean(Xp, dim=1).reshape((-1, 1))
+    if isinstance(H, Callable):
+        Xh = H(Xp)
+        z_mean = torch.mean(Xh, dim=1).reshape((-1, 1))
+        Xh_minus_z_mean = Xh - z_mean
+        Pzz = (
+            one_over_Ne_minus_one * (Xh_minus_z_mean @ Xh_minus_z_mean.T)
+            + R
+        )
+        Pxz = one_over_Ne_minus_one * ((Xp - E) @ Xh_minus_z_mean.T)
+        Xe = Xp + Pxz @ torch.linalg.solve(Pzz, D - Xh)
+    elif isinstance(H, torch.Tensor):
+        A = Xp - E
+        Pe = one_over_Ne_minus_one * (A @ A.T)
+        # Assembly of the Kalman gain matrix
+        K = (H @ Pe @ H.T) + R
+        # Solve
+        w = torch.linalg.solve(K, D - (H @ Xp))
+        # Update
+        Xe = Xp + (Pe @ H.T @ w)
+    else:
+        raise TypeError(
+            f"Only support types: [Callable, torch.Tensor], \
+                but given {type(H)=}"
+        )
+    
+    return Xe
+
+
+def apply_EnKF(
     n_steps: int,
     nobs: int,
     time_obs: torch.Tensor,
@@ -74,10 +119,10 @@ def EnKF(
     Ne: int,
     M: torch.Tensor | Callable,
     H: torch.Tensor | Callable,
-    R: torch.Tensor,
-    y: torch.Tensor,
-    x0: torch.Tensor,
     P0: torch.Tensor,
+    R: torch.Tensor,
+    x0: torch.Tensor,
+    y: torch.Tensor,
     start_time: float = 0.0,
     args: tuple = (None,),
 ) -> tuple[torch.Tensor, torch.Tensor]:
@@ -88,16 +133,12 @@ def EnKF(
     device = x0.device
     x_ave = torch.zeros((x0.size(0), n_steps + 1), device=device)
     x_ens = torch.zeros((x0.size(0), n_steps + 1, Ne), device=device)
-    D = torch.zeros((y.size(0), Ne), device=device)
     Xp = torch.zeros((x0.size(0), Ne), device=device)
-    sR = R.sqrt()
-    sP = P0.sqrt()
 
     # construct initial ensemble
     Xe = x0.reshape((-1, 1)) + (
-        sP @ torch.randn(size=(x0.size(0), Ne), device=device)
+        P0.sqrt() @ torch.randn(size=(x0.size(0), Ne), device=device)
     )
-    one_over_Ne_minus_one = 1.0 / (Ne - 1.0)
     one_over_Ne = 1.0 / Ne
 
     current_time = start_time
@@ -115,35 +156,7 @@ def EnKF(
             x_ens[:, istart:istop, e] = xf
             Xp[:, e] = xf[:, -1]
             running_mean = running_mean + xf
-            # Noise the obs (Burgers et al, 1998)
-            D[:, e] = y[:, iobs] + (
-                sR @ torch.randn(size=(y.size(0),), device=device)
-            )
-        E = torch.mean(Xp, dim=1).reshape((-1, 1))
-        if isinstance(H, Callable):
-            Xh = H(Xp)
-            z_mean = torch.mean(Xh, dim=1).reshape((-1, 1))
-            Xh_minus_z_mean = Xh - z_mean
-            Pzz = (
-                one_over_Ne_minus_one * (Xh_minus_z_mean @ Xh_minus_z_mean.T)
-                + R
-            )
-            Pxz = one_over_Ne_minus_one * ((Xp - E) @ Xh_minus_z_mean.T)
-            Xe = Xp + Pxz @ torch.linalg.solve(Pzz, D - Xh)
-        elif isinstance(H, torch.Tensor):
-            A = Xp - E
-            Pe = one_over_Ne_minus_one * (A @ A.T)
-            # Assembly of the Kalman gain matrix
-            K = (H @ Pe @ H.T) + R
-            # Solve
-            w = torch.linalg.solve(K, D - (H @ Xp))
-            # Update
-            Xe = Xp + (Pe @ H.T @ w)
-        else:
-            raise TypeError(
-                f"Only support types: [Callable, torch.Tensor], \
-                    but given {type(H)=}"
-            )
+        Xe = apply_EnKF_once(Ne, H, R, Xp, y[:, iobs])
         running_mean = one_over_Ne * running_mean
         x_ave[:, istart:istop] = running_mean
         current_time = time_obs[iobs]
