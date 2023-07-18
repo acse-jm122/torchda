@@ -72,7 +72,6 @@ def apply_EnKF_once(
     Xp: torch.Tensor,
     y: torch.Tensor,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-
     device = Xp.device
     sR = R.sqrt()
 
@@ -87,10 +86,7 @@ def apply_EnKF_once(
         Xh = H(Xp)
         z_mean = torch.mean(Xh, dim=1).reshape((-1, 1))
         Xh_minus_z_mean = Xh - z_mean
-        Pzz = (
-            one_over_Ne_minus_one * (Xh_minus_z_mean @ Xh_minus_z_mean.T)
-            + R
-        )
+        Pzz = one_over_Ne_minus_one * (Xh_minus_z_mean @ Xh_minus_z_mean.T) + R
         Pxz = one_over_Ne_minus_one * ((Xp - E) @ Xh_minus_z_mean.T)
         Xe = Xp + Pxz @ torch.linalg.solve(Pzz, D - Xh)
     elif isinstance(H, torch.Tensor):
@@ -107,7 +103,7 @@ def apply_EnKF_once(
             f"Only support types: [Callable, torch.Tensor], \
                 but given {type(H)=}"
         )
-    
+
     return Xe
 
 
