@@ -1,11 +1,12 @@
 # IRP2023
 AI for science: learning the map function from observation space to hidden state space in data assimilation
 
-DEPENDENCIES
+Dependencies
 ------------
-* PyTorch 2.0 or newer
+* Python 3.10 or later
+* PyTorch (Recommend 2.0 or later)
 
-INSTALLATION
+Installation
 ------------
 * Build a `conda` environment, run:
 ```

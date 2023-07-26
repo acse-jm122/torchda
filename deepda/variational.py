@@ -1,7 +1,9 @@
-import torch
 from typing import Callable
 
-__all__ = ["apply_3DVar", "apply_4DVar"]
+import torch
+from numpy import ndarray
+
+__all__ = ("apply_3DVar", "apply_4DVar")
 
 
 def apply_3DVar(
@@ -62,7 +64,7 @@ def apply_3DVar(
 
 def apply_4DVar(
     nobs: int,
-    time_obs: torch.Tensor,
+    time_obs: list | tuple | ndarray | torch.Tensor,
     gap: int,
     M: Callable,
     H: Callable,
@@ -71,7 +73,6 @@ def apply_4DVar(
     xb: torch.Tensor,
     y: torch.Tensor,
     start_time: float = 0.0,
-    model_args: tuple = (None,),
     threshold: float = 1e-5,
     max_iterations: int = 1000,
     learning_rate: float = 1e-3,
@@ -79,18 +80,12 @@ def apply_4DVar(
     is_vector_y: bool = True,
     batch_first: bool = True,
     logging: bool = True,
+    args: tuple = (None,),
 ) -> torch.Tensor:
     """
     apply 4DVar
     """
     new_x0 = torch.nn.Parameter(xb.clone().detach())
-
-    # def Jb(x0: torch.Tensor, xb: torch.Tensor):
-    #     x0_minus_xb = x0 - xb
-    #     return (
-    #         x0_minus_xb.reshape((1, -1)) @
-    #         torch.linalg.solve(B, x0_minus_xb).reshape((-1, 1))
-    #     )
 
     def Jb(x0: torch.Tensor, xb: torch.Tensor, y: torch.Tensor):
         x0_minus_xb = x0 - xb
@@ -130,11 +125,11 @@ def apply_4DVar(
                 current_time, time_obs[iobs - 1], gap + 1, device=xb.device
             )
             if is_vector_y:
-                xf = M(xp, time_fw, *model_args)
+                xf = M(xp, time_fw, *args)
                 xp = xf[:, -1]
                 total_loss += Jo(xp, y[iobs])
             else:
-                xp = M(xp, time_fw, *model_args)
+                xp = M(xp, time_fw, *args)
                 sequence_length = xp.size(1) if batch_first else xp.size(0)
                 for i in range(sequence_length):
                     one_xp = xp[:, i] if batch_first else xp[i]
