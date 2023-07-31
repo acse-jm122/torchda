@@ -24,4 +24,4 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pytest -p no:warnings tests/
+          pytest tests/

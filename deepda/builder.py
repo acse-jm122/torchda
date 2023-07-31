@@ -3,16 +3,21 @@ from typing import Any, Callable
 
 import torch
 from numpy import ndarray
+from torch._C import _LinAlgError as LinAlgError
 
-from . import Algorithms
-from .executor import Executor, Parameters, _Tensor
+from . import Algorithms, Device
+from .executor import Executor, Parameters, _GenericTensor
 
-__all__ = ("Parameters", "CaseBuilder")
+__all__ = "Parameters", "CaseBuilder"
 
 
 class CaseBuilder:
+    __slots__ = "case_name", "__parameters", "__executor"
+
     def __init__(
-        self, case_name: str = "", parameters: Parameters = None
+        self,
+        case_name: str = "",
+        parameters: dict[str, Any] | Parameters = None,
     ) -> None:
         self.case_name = case_name
         self.__parameters = Parameters()
@@ -25,8 +30,10 @@ class CaseBuilder:
     ) -> "CaseBuilder":
         if isinstance(parameters, Parameters):
             parameters = asdict(parameters)
+        checked_builder = CaseBuilder()
         for param_name, param_value in parameters.items():
-            self.set_parameter(param_name, param_value)
+            checked_builder.set_parameter(param_name, param_value)
+        self.__parameters = checked_builder.__parameters
         return self
 
     def set_parameter(self, name: str, value: Any) -> "CaseBuilder":
@@ -44,6 +51,11 @@ class CaseBuilder:
     def set_algorithm(self, algorithm: Algorithms) -> "CaseBuilder":
         if algorithm in Algorithms:
             self.__parameters.algorithm = algorithm
+        return self
+
+    def set_device(self, device: Device) -> "CaseBuilder":
+        if device in Device:
+            self.__parameters.device = device
         return self
 
     def set_forward_model(self, forward_model: Callable) -> "CaseBuilder":
@@ -66,6 +78,21 @@ class CaseBuilder:
         self.__parameters.observation_model = observation_model
         return self
 
+    @staticmethod
+    def check_covariance_matrix(cov_matrix: torch.Tensor) -> None:
+        if cov_matrix.ndim != 2 or (
+            size := cov_matrix.size(0)
+        ) != cov_matrix.size(1):
+            raise LinAlgError(
+                "Covariance matrix should be a 2D square matrix."
+            )
+        if not torch.allclose(cov_matrix, cov_matrix.T):
+            raise LinAlgError(
+                "Covariance matrix should be a symmetric matrix."
+            )
+        if torch.linalg.matrix_rank(cov_matrix) != size:
+            raise LinAlgError("The input matrix is a singular matrix.")
+
     def set_background_covariance_matrix(
         self, background_covariance_matrix: torch.Tensor
     ) -> "CaseBuilder":
@@ -74,6 +101,7 @@ class CaseBuilder:
                 "background_covariance_matrix must be an instance of Tensor, "
                 f"given {type(background_covariance_matrix)=}"
             )
+        self.check_covariance_matrix(background_covariance_matrix)
         self.__parameters.background_covariance_matrix = (
             background_covariance_matrix
         )
@@ -88,6 +116,7 @@ class CaseBuilder:
                 "must be an instance of Tensor, "
                 f"given {type(observation_covariance_matrix)=}"
             )
+        self.check_covariance_matrix(observation_covariance_matrix)
         self.__parameters.observation_covariance_matrix = (
             observation_covariance_matrix
         )
@@ -114,16 +143,23 @@ class CaseBuilder:
         return self
 
     def set_observation_time_steps(
-        self, observation_time_steps: _Tensor
+        self, observation_time_steps: _GenericTensor
     ) -> "CaseBuilder":
         if not isinstance(
             observation_time_steps, (list, tuple, ndarray, torch.Tensor)
         ):
             raise TypeError(
-                f"observation_time_steps must be a {_Tensor.__bound__} type, "
+                "observation_time_steps must be a "
+                f"{_GenericTensor.__bound__} type, "
                 f"given {type(observation_time_steps)=}"
             )
         self.__parameters.observation_time_steps = observation_time_steps
+        return self
+
+    def set_gap(self, gap: int) -> "CaseBuilder":
+        if not isinstance(gap, int):
+            raise TypeError(f"gap must be an integer, given {type(gap)=}")
+        self.__parameters.gap = gap
         return self
 
     def set_num_steps(self, num_steps: int) -> "CaseBuilder":
@@ -158,15 +194,6 @@ class CaseBuilder:
         self.__parameters.args = args
         return self
 
-    def set_threshold(self, threshold: int | float) -> "CaseBuilder":
-        if not isinstance(threshold, (int, float)):
-            raise TypeError(
-                "threshold must be an integer or a floating point number, "
-                f"given {type(threshold)=}"
-            )
-        self.__parameters.threshold = threshold
-        return self
-
     def set_max_iterations(self, max_iterations: int) -> "CaseBuilder":
         if not isinstance(max_iterations, int):
             raise TypeError(
@@ -185,30 +212,6 @@ class CaseBuilder:
         self.__parameters.learning_rate = learning_rate
         return self
 
-    def set_is_vector_xb(self, is_vector_xb: bool) -> "CaseBuilder":
-        if not isinstance(is_vector_xb, bool):
-            raise TypeError(
-                f"is_vector_xb must be a bool, given {type(is_vector_xb)=}"
-            )
-        self.__parameters.is_vector_xb = is_vector_xb
-        return self
-
-    def set_is_vector_y(self, is_vector_y: bool) -> "CaseBuilder":
-        if not isinstance(is_vector_y, bool):
-            raise TypeError(
-                f"is_vector_y must be a bool, given {type(is_vector_y)=}"
-            )
-        self.__parameters.is_vector_y = is_vector_y
-        return self
-
-    def set_batch_first(self, batch_first: bool) -> "CaseBuilder":
-        if not isinstance(batch_first, bool):
-            raise TypeError(
-                f"batch_first must be a bool, given {type(batch_first)=}"
-            )
-        self.__parameters.batch_first = batch_first
-        return self
-
     def set_logging(self, logging: bool) -> "CaseBuilder":
         if not isinstance(logging, bool):
             raise TypeError(f"logging must be a bool, given {type(logging)=}")
@@ -216,10 +219,7 @@ class CaseBuilder:
         return self
 
     def execute(self) -> dict[str, torch.Tensor]:
-        self.results = self.__executor.set_input_parameters(
-            self.__parameters
-        ).run()
-        return self.results
+        return self.__executor.set_input_parameters(self.__parameters).run()
 
     def get_results_dict(self) -> dict[str, torch.Tensor]:
         return self.__executor.get_results_dict()
@@ -237,7 +237,7 @@ class CaseBuilder:
             "--------------------------------------",
         ]
         str_list.extend(
-            f"{param_name}: {param_value}"
+            f"{param_name}:\n{param_value}\n"
             for param_name, param_value in params_dict.items()
         )
         return "\n".join(str_list)

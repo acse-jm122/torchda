@@ -1,7 +1,6 @@
 from contextlib import suppress
 from enum import Enum, auto, unique
-
-from pkg_resources import DistributionNotFound, get_distribution
+from importlib.metadata import PackageNotFoundError, version
 
 
 @unique
@@ -11,9 +10,15 @@ class Algorithms(Enum):
     Var4D = auto()
 
 
+@unique
+class Device(Enum):
+    CPU = auto()
+    GPU = auto()
+
+
 from .builder import *  # noqa
 from .kalman_filter import *  # noqa
 from .variational import *  # noqa
 
-with suppress(DistributionNotFound):
-    __version__ = get_distribution(__name__).version
+with suppress(PackageNotFoundError):
+    __version__ = version(__name__)
