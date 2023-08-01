@@ -172,7 +172,7 @@ def apply_EnKF(
         )
 
     device = x0.device
-    x_dim, y_dim = x0.size(0), y.size(0)
+    x_dim = x0.size(0)
     x_ave = torch.zeros((x_dim, n_steps + 1), device=device)
     x_ens = torch.zeros((x_dim, n_steps + 1, Ne), device=device)
 
