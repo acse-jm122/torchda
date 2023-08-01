@@ -1,6 +1,10 @@
 from contextlib import suppress
 from enum import Enum, auto, unique
 from importlib.metadata import PackageNotFoundError, version
+from typing import TypeVar
+
+from numpy import ndarray
+from torch import Tensor
 
 
 @unique
@@ -14,6 +18,12 @@ class Algorithms(Enum):
 class Device(Enum):
     CPU = auto()
     GPU = auto()
+
+
+_GenericTensor = TypeVar(
+    "_GenericTensor",
+    bound=list | tuple | ndarray | Tensor,
+)  # noqa
 
 
 from .builder import *  # noqa

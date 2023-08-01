@@ -1,14 +1,15 @@
 from typing import Callable
 
 import torch
-from numpy import ndarray
+
+from . import _GenericTensor
 
 __all__ = "apply_KF", "apply_EnKF"
 
 
 def apply_KF(
     n_steps: int,
-    time_obs: list | tuple | ndarray | torch.Tensor,
+    time_obs: _GenericTensor,
     gap: int,
     M: Callable,
     H: torch.Tensor,
@@ -135,7 +136,7 @@ def apply_KF(
 
 def apply_EnKF(
     n_steps: int,
-    time_obs: list | tuple | ndarray | torch.Tensor,
+    time_obs: _GenericTensor,
     gap: int,  # number of time steps between each observation
     Ne: int,
     M: Callable,
@@ -161,17 +162,28 @@ def apply_EnKF(
             "`H` must be a callable type or an instance of Tensor "
             f"in Ensemble Kalman Filter, but given {type(H)=}"
         )
+    if isinstance(M, torch.nn.Module) or isinstance(H, torch.nn.Module):
+        from warnings import warn
+
+        warn(
+            "This EnKF function cannot calculate steady output for "
+            "nueral network `M` or `H`, it would be fixed in the future.",
+            FutureWarning,
+        )
 
     device = x0.device
-    x_dim = x0.size(0)
+    x_dim, y_dim = x0.size(0), y.size(0)
     x_ave = torch.zeros((x_dim, n_steps + 1), device=device)
     x_ens = torch.zeros((x_dim, n_steps + 1, Ne), device=device)
-    Xp = torch.zeros((x_dim, Ne), device=device)
 
     # construct initial ensemble
-    Xe = x0.reshape((-1, 1)) + (
-        P0.sqrt() @ torch.randn(size=(x_dim, Ne), device=device)
-    )
+    X = (
+        torch.distributions.MultivariateNormal(
+            loc=x0.ravel(), covariance_matrix=P0
+        )
+        .sample([Ne])
+        .T
+    ).to(device=device)
     one_over_Ne = 1.0 / Ne
     one_over_Ne_minus_one = 1.0 / (Ne - 1.0)
 
@@ -186,31 +198,38 @@ def apply_EnKF(
         )
         for e in range(Ne):
             # prediction phase for each ensemble member
-            Xf = M(Xe[:, e], time_fw, *args)
+            Xf = M(X[:, e], time_fw, *args)
             x_ens[:, istart:istop, e] = Xf
-            Xp[:, e] = Xf[:, -1]
+            X[:, e] = Xf[:, -1]
             running_mean = running_mean + Xf
-        y_iobs = y[:, iobs].reshape((-1, 1))
-        E = torch.mean(Xp, dim=1).reshape((-1, 1))
+        # Noise the obs (Burgers et al, 1998)
+        D = (
+            torch.distributions.MultivariateNormal(
+                loc=y[:, iobs].ravel(),
+                covariance_matrix=R,
+            )
+            .sample([Ne])
+            .T
+        ).to(device=device)
+        E = torch.mean(X, dim=1).view((-1, 1))
         if isinstance(H, Callable):
-            Xh = H(Xp)
-            z_mean = torch.mean(Xh, dim=1).reshape((-1, 1))
-            Xh_minus_z_mean = Xh - z_mean
+            Xh = H(X)
+            Xh_minus_z_mean = Xh - torch.mean(Xh, dim=1).view((-1, 1))
             Pzz = (
                 one_over_Ne_minus_one * (Xh_minus_z_mean @ Xh_minus_z_mean.T)
                 + R
             )
-            Pxz = one_over_Ne_minus_one * ((Xp - E) @ Xh_minus_z_mean.T)
-            Xe = Xp + Pxz @ torch.linalg.solve(Pzz, y_iobs - Xh)
+            Pxz = one_over_Ne_minus_one * ((X - E) @ Xh_minus_z_mean.T)
+            X = X + Pxz @ torch.linalg.solve(Pzz, D - Xh)
         else:  # isinstance(H, torch.Tensor)
-            A = Xp - E
+            A = X - E
             Pe = one_over_Ne_minus_one * (A @ A.T)
             # Assembly of the Kalman gain matrix
             K = (H @ Pe @ H.T) + R
             # Solve
-            w = torch.linalg.solve(K, y_iobs - (H @ Xp))
+            w = torch.linalg.solve(K, D - (H @ X))
             # Update
-            Xe = Xp + (Pe @ H.T @ w)
+            X = X + (Pe @ H.T @ w)
         running_mean = one_over_Ne * running_mean
         x_ave[:, istart:istop] = running_mean
         current_time = time_obs_iobs

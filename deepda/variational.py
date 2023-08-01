@@ -1,7 +1,8 @@
 from typing import Callable
 
 import torch
-from numpy import ndarray
+
+from . import _GenericTensor
 
 __all__ = "apply_3DVar", "apply_4DVar"
 
@@ -17,6 +18,11 @@ def apply_3DVar(
     logging: bool = True,
 ) -> tuple[torch.Tensor, dict[str, list]]:
     """ """
+    if not isinstance(H, Callable):
+        raise TypeError(
+            f"`H` must be a callable type in 3DVar, but given {type(H)=}"
+        )
+
     xb_inner = xb.unsqueeze(0) if xb.ndim == 1 else xb
     y_inner = y.unsqueeze(0) if y.ndim == 1 else y
 
@@ -50,14 +56,14 @@ def apply_3DVar(
         trainer.step()
         intermediate_results["J"].append(J)
         intermediate_results["J_grad_norm"].append(J_grad_norm)
-        latest_x0 = new_x0.detach().clone().reshape_as(xb)
+        latest_x0 = new_x0.detach().clone().view_as(xb)
         intermediate_results["background_states"].append(latest_x0)
 
     return latest_x0, intermediate_results
 
 
 def apply_4DVar(
-    time_obs: list | tuple | ndarray | torch.Tensor,
+    time_obs: _GenericTensor,
     gap: int,
     M: Callable,
     H: Callable,
@@ -72,6 +78,15 @@ def apply_4DVar(
 ) -> tuple[torch.Tensor, dict[str, list]]:
     """
     """
+    if not isinstance(M, Callable):
+        raise TypeError(
+            f"`M` must be a callable type in 4DVar, but given {type(M)=}"
+        )
+    if not isinstance(H, Callable):
+        raise TypeError(
+            f"`H` must be a callable type in 4DVar, but given {type(H)=}"
+        )
+
     new_x0 = torch.nn.Parameter(xb.detach().clone())
 
     intermediate_results = {

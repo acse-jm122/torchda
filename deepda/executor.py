@@ -1,18 +1,12 @@
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Callable, Optional, TypeVar
+from typing import Callable, Optional
 
 import torch
-from numpy import ndarray
 
-from . import Algorithms, Device
+from . import Algorithms, Device, _GenericTensor
 from .kalman_filter import apply_EnKF
 from .variational import apply_3DVar, apply_4DVar
-
-_GenericTensor = TypeVar(
-    "_GenericTensor",
-    bound=list | tuple | ndarray | torch.Tensor,
-)
 
 
 @dataclass
