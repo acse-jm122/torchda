@@ -4,8 +4,6 @@ import torch
 
 from . import _GenericTensor
 
-__all__ = "apply_KF", "apply_EnKF"
-
 
 def apply_KF(
     n_steps: int,
@@ -162,17 +160,9 @@ def apply_EnKF(
             "`H` must be a callable type or an instance of Tensor "
             f"in Ensemble Kalman Filter, but given {type(H)=}"
         )
-    if isinstance(M, torch.nn.Module) or isinstance(H, torch.nn.Module):
-        from warnings import warn
-
-        warn(
-            "This EnKF function cannot calculate steady output for "
-            "nueral network `M` or `H`, it would be fixed in the future.",
-            FutureWarning,
-        )
 
     device = x0.device
-    x_dim = x0.size(0)
+    x_dim = x0.numel()
     x_ave = torch.zeros((x_dim, n_steps + 1), device=device)
     x_ens = torch.zeros((x_dim, n_steps + 1, Ne), device=device)
 

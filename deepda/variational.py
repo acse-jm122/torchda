@@ -4,8 +4,6 @@ import torch
 
 from . import _GenericTensor
 
-__all__ = "apply_3DVar", "apply_4DVar"
-
 
 def apply_3DVar(
     H: Callable,
@@ -70,7 +68,7 @@ def apply_4DVar(
     B: torch.Tensor,
     R: torch.Tensor,
     xb: torch.Tensor,
-    y: torch.Tensor,
+    y: list[torch.Tensor],
     max_iterations: int = 1000,
     learning_rate: float = 1e-3,
     logging: bool = True,
@@ -120,12 +118,11 @@ def apply_4DVar(
             time_fw = torch.linspace(
                 current_time, time_ibos, gap + 1, device=device
             )
-            xf = M(xp, time_fw, *args)
-            sequence_length = xf.size(1)
-            xp = xf[-sequence_length:]
-            for i in range(sequence_length):
-                loss_Jo += Jo(xp[i].ravel(), y[iobs, i].ravel())
+            xp = M(xp, time_fw, *args)
+            for i in range(xp.size(0)):  # sequence_length
+                loss_Jo += Jo(xp[i].ravel(), y[iobs][i].ravel())
             current_time = time_ibos
+            xp = xp[-1]
         total_loss = loss_Jb + loss_Jo
         total_loss.backward(retain_graph=True)
         J_grad_norm = torch.norm(new_x0.grad).item()

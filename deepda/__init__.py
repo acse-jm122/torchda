@@ -6,6 +6,9 @@ from typing import TypeVar
 from numpy import ndarray
 from torch import Tensor
 
+with suppress(PackageNotFoundError):
+    __version__ = version(__name__)
+
 
 @unique
 class Algorithms(Enum):
@@ -26,9 +29,15 @@ _GenericTensor = TypeVar(
 )  # noqa
 
 
-from .builder import *  # noqa
-from .kalman_filter import *  # noqa
-from .variational import *  # noqa
+from .builder import CaseBuilder, Parameters  # noqa
+from .kalman_filter import apply_EnKF, apply_KF  # noqa
+from .variational import apply_3DVar, apply_4DVar  # noqa
 
-with suppress(PackageNotFoundError):
-    __version__ = version(__name__)
+__all__ = (
+    "Parameters",
+    "CaseBuilder",
+    "apply_KF",
+    "apply_EnKF",
+    "apply_3DVar",
+    "apply_4DVar",
+)
