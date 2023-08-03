@@ -68,7 +68,7 @@ def apply_4DVar(
     B: torch.Tensor,
     R: torch.Tensor,
     xb: torch.Tensor,
-    y: list[torch.Tensor],
+    y: tuple[torch.Tensor] | list[torch.Tensor],
     max_iterations: int = 1000,
     learning_rate: float = 1e-3,
     logging: bool = True,
@@ -83,6 +83,11 @@ def apply_4DVar(
     if not isinstance(H, Callable):
         raise TypeError(
             f"`H` must be a callable type in 4DVar, but given {type(H)=}"
+        )
+    if not isinstance(y, (tuple, list)):
+        raise TypeError(
+            "`y` must be a tuple or list of Tensor in 4DVar, "
+            f"but given {type(y)=}"
         )
 
     new_x0 = torch.nn.Parameter(xb.detach().clone())

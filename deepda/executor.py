@@ -16,7 +16,9 @@ class Parameters:
     background_covariance_matrix: torch.Tensor = None
     observation_covariance_matrix: torch.Tensor = None
     background_state: torch.Tensor = None
-    observations: torch.Tensor = None
+    observations: torch.Tensor | tuple[torch.Tensor] | list[
+        torch.Tensor
+    ] = None
     device: Optional[Device] = Device.CPU
     forward_model: Optional[Callable] = None
     observation_time_steps: Optional[_GenericTensor] = None
@@ -50,6 +52,9 @@ class Executor:
 
     def __check_4DVar_parameters(self) -> None:
         self.__check_3DVar_parameters()
+        assert isinstance(
+            self.__parameters.observations, (tuple, list)
+        ), "observations must be a tuple or list of Tensor in 4DVar"
         assert len(self.__parameters.observation_time_steps) >= 2
 
     def __call_apply_EnKF(self) -> tuple[torch.Tensor, torch.Tensor]:

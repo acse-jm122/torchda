@@ -131,11 +131,14 @@ class CaseBuilder:
         self.__parameters.background_state = background_state
         return self
 
-    def set_observations(self, observations: torch.Tensor) -> "CaseBuilder":
-        if not isinstance(observations, torch.Tensor):
+    def set_observations(
+        self,
+        observations: torch.Tensor | tuple[torch.Tensor] | list[torch.Tensor],
+    ) -> "CaseBuilder":
+        if not isinstance(observations, (torch.Tensor, tuple, list)):
             raise TypeError(
-                f"observations must be an instance of Tensor, "
-                f"given {type(observations)=}"
+                "observations must be an instance of Tensor "
+                f"or a tuple or list of Tensor, given {type(observations)=}"
             )
         self.__parameters.observations = observations
         return self
