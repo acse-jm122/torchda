@@ -59,8 +59,8 @@ def apply_KF(
     x0 : The initial state estimate. A 1D tensor of shape (state_dim).
 
     y : The observed measurements. A 2D tensor of shape
-        (measurement_dim, number of observations).
-        Each column represents a measurement at a specific time step.
+        (number of observations, measurement_dim).
+        Each row represents a measurement at a specific time step.
 
     start_time : The starting time of the filtering process. Default is 0.0.
 
@@ -69,8 +69,8 @@ def apply_KF(
 
     Returns
     -------
-    x_estimates : A 2D tensor of shape (state_dim, n_steps + 1).
-        Each column represents the estimated state vector
+    x_estimates : A 2D tensor of shape (n_steps + 1, state_dim).
+        Each row represents the estimated state vector
         at a specific time step, including the initial state.
 
     Raises
@@ -103,10 +103,10 @@ def apply_KF(
         )
 
     device = x0.device
-    x_estimates = torch.zeros((x0.size(0), n_steps + 1), device=device)
+    x_estimates = torch.zeros((n_steps + 1, x0.numel()), device=device)
 
     # construct initial state
-    xp = x0
+    x = x0.ravel()
 
     current_time = start_time
     for iobs, time_obs_iobs in enumerate(time_obs):
@@ -117,16 +117,16 @@ def apply_KF(
         time_fw = torch.linspace(
             current_time, time_obs_iobs, gap + 1, device=device
         )
-        Xf = M(xp, time_fw, *args)
+        X = M(x, time_fw, *args)
 
         # update
-        xp = Xf[:, -1]
+        x = X[-1]
         K = (H @ P0 @ H.T) + R
-        w = torch.linalg.solve(K, y[:, iobs] - (H @ xp))
-        xp = xp + (P0 @ H.T @ w)
+        w = torch.linalg.solve(K, y[iobs] - (H @ x))
+        x = x + (P0 @ H.T @ w)
 
         # store estimates
-        x_estimates[:, istart:istop] = Xf
+        x_estimates[istart:istop] = X
         current_time = time_obs_iobs
 
     return x_estimates
@@ -163,22 +163,20 @@ def apply_EnKF(
 
     device = x0.device
     x_dim = x0.numel()
-    x_ave = torch.zeros((x_dim, n_steps + 1), device=device)
-    x_ens = torch.zeros((x_dim, n_steps + 1, Ne), device=device)
+    x_ave = torch.zeros((n_steps + 1, x_dim), device=device)
+    x_ens = torch.zeros((n_steps + 1, Ne, x_dim), device=device)
 
     # construct initial ensemble
     X = (
         torch.distributions.MultivariateNormal(
             loc=x0.ravel(), covariance_matrix=P0
-        )
-        .sample([Ne])
-        .T
+        ).sample([Ne])
     ).to(device=device)
     one_over_Ne = 1.0 / Ne
     one_over_Ne_minus_one = 1.0 / (Ne - 1.0)
 
     current_time = start_time
-    running_mean = torch.empty((x_dim, gap + 1), device=device)
+    running_mean = torch.empty((gap + 1, x_dim), device=device)
     for iobs, time_obs_iobs in enumerate(time_obs):
         istart = iobs * gap
         istop = istart + gap + 1
@@ -188,40 +186,41 @@ def apply_EnKF(
         )
         for e in range(Ne):
             # prediction phase for each ensemble member
-            Xf = M(X[:, e], time_fw, *args)
-            x_ens[:, istart:istop, e] = Xf
-            X[:, e] = Xf[:, -1]
+            Xf = M(X[e], time_fw, *args)
+            x_ens[istart:istop, e] = Xf
+            X[e] = Xf[-1]
             running_mean = running_mean + Xf
         # Noise the obs (Burgers et al, 1998)
         D = (
             torch.distributions.MultivariateNormal(
-                loc=y[:, iobs].ravel(),
+                loc=y[iobs].ravel(),
                 covariance_matrix=R,
-            )
-            .sample([Ne])
-            .T
+            ).sample([Ne])
         ).to(device=device)
-        E = torch.mean(X, dim=1).view((-1, 1))
+        E = torch.mean(X, dim=0).view((1, -1))
         if isinstance(H, Callable):
             Xh = H(X)
-            Xh_minus_z_mean = Xh - torch.mean(Xh, dim=1).view((-1, 1))
+            Xh_minus_z_mean = Xh - torch.mean(Xh, dim=0).view((1, -1))
             Pzz = (
-                one_over_Ne_minus_one * (Xh_minus_z_mean @ Xh_minus_z_mean.T)
+                one_over_Ne_minus_one * (Xh_minus_z_mean.T @ Xh_minus_z_mean)
                 + R
             )
-            Pxz = one_over_Ne_minus_one * ((X - E) @ Xh_minus_z_mean.T)
-            X = X + Pxz @ torch.linalg.solve(Pzz, D - Xh)
+            Pxz = one_over_Ne_minus_one * ((X - E).T @ Xh_minus_z_mean)
+            # X = X + (Pxz @ torch.linalg.pinv(Pzz) @ (D - Xh).T).T
+            # X = X + (Pxz @ torch.linalg.solve(Pzz, (D - Xh).T)).T
+            # X = X + (D - Xh) @ torch.linalg.pinv(Pzz.T) @ Pxz.T
+            X = X + (D - Xh) @ torch.linalg.solve(Pzz, Pxz.T)
         else:  # isinstance(H, torch.Tensor)
             A = X - E
-            Pe = one_over_Ne_minus_one * (A @ A.T)
+            Pe = one_over_Ne_minus_one * (A.T @ A)
             # Assembly of the Kalman gain matrix
             K = (H @ Pe @ H.T) + R
             # Solve
-            w = torch.linalg.solve(K, D - (H @ X))
+            w = torch.linalg.solve(K, D.T - (H @ X.T))
             # Update
-            X = X + (Pe @ H.T @ w)
+            X = X + (Pe @ H.T @ w).T
         running_mean = one_over_Ne * running_mean
-        x_ave[:, istart:istop] = running_mean
+        x_ave[istart:istop] = running_mean
         current_time = time_obs_iobs
 
     return x_ave, x_ens
