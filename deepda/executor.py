@@ -269,9 +269,13 @@ class Executor:
         self.__parameters.background_state = (
             self.__parameters.background_state.to(device=device)
         )
-        self.__parameters.observations = self.__parameters.observations.to(
-            device=device
-        )
+        observations = self.__parameters.observations
+        if isinstance(observations, (tuple, list)):
+            for i, sample_iobs in enumerate(observations):
+                observations[i] = sample_iobs.to(device=device)
+        else:  # isinstance(observations, torch.Tensor)
+            observations = observations.to(device=device)
+        self.__parameters.observations = observations
         if (
             observation_model := self.__parameters.observation_model
         ) is not None and isinstance(observation_model, torch.Tensor):

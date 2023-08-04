@@ -34,9 +34,12 @@ class CaseBuilder:
 
     Methods
     -------
-    set_all_parameters(parameters: dict[str, Any] | Parameters)
+    set_parameters(parameters: dict[str, Any] | Parameters)
         -> CaseBuilder:
-        Set all parameters for the data assimilation case.
+        Set a batch of parameters for the data assimilation case.
+
+    set_parameter(self, name: str, value: Any) -> CaseBuilder:
+        Set a parameter for the data assimilation case.
 
     set_algorithm(algorithm: Algorithms) -> CaseBuilder:
         Set the data assimilation algorithm to use (EnKF, 3D-Var, 4D-Var).
@@ -50,6 +53,9 @@ class CaseBuilder:
     set_observation_model(observation_model: torch.Tensor | Callable)
         -> CaseBuilder:
         Set the observation model or matrix 'H' for EnKF.
+
+    check_covariance_matrix(cov_matrix: torch.Tensor) -> None:
+        Check if a given covariance matrix is valid.
 
     set_background_covariance_matrix
         (background_covariance_matrix: torch.Tensor) -> CaseBuilder:
@@ -116,10 +122,10 @@ class CaseBuilder:
         self.case_name = case_name
         self.__parameters = Parameters()
         if parameters is not None:
-            self.set_all_parameters(parameters)
+            self.set_parameters(parameters)
         self.__executor = Executor()
 
-    def set_all_parameters(
+    def set_parameters(
         self, parameters: dict[str, Any] | Parameters
     ) -> "CaseBuilder":
         if isinstance(parameters, Parameters):
@@ -169,11 +175,29 @@ class CaseBuilder:
                 "observation_model must be an instance of Tensor "
                 f"or a callable type, given {type(observation_model)=}"
             )
-        self.__parameters.observation_model = observation_model
+        self.__parameters.observation_model = (
+            observation_model.detach().clone()
+            if isinstance(observation_model, torch.Tensor)
+            else observation_model
+        )
         return self
 
     @staticmethod
     def check_covariance_matrix(cov_matrix: torch.Tensor) -> None:
+        """
+        Check if a given covariance matrix is valid.
+
+        Parameters
+        ----------
+        cov_matrix : torch.Tensor
+            The covariance matrix to be checked.
+
+        Raises
+        ------
+        LinAlgError
+            If the covariance matrix is not a valid square matrix,
+            not symmetric, or is singular.
+        """
         if cov_matrix.ndim != 2 or (
             size := cov_matrix.size(0)
         ) != cov_matrix.size(1):
@@ -197,7 +221,7 @@ class CaseBuilder:
             )
         self.check_covariance_matrix(background_covariance_matrix)
         self.__parameters.background_covariance_matrix = (
-            background_covariance_matrix
+            background_covariance_matrix.detach().clone()
         )
         return self
 
@@ -212,7 +236,7 @@ class CaseBuilder:
             )
         self.check_covariance_matrix(observation_covariance_matrix)
         self.__parameters.observation_covariance_matrix = (
-            observation_covariance_matrix
+            observation_covariance_matrix.detach().clone()
         )
         return self
 
@@ -224,7 +248,7 @@ class CaseBuilder:
                 "background_state must be an instance of Tensor, "
                 f"given {type(background_state)=}"
             )
-        self.__parameters.background_state = background_state
+        self.__parameters.background_state = background_state.detach().clone()
         return self
 
     def set_observations(
@@ -236,6 +260,11 @@ class CaseBuilder:
                 "observations must be an instance of Tensor "
                 f"or a tuple or list of Tensor, given {type(observations)=}"
             )
+        if isinstance(observations, (tuple, list)):
+            for i, sample_iobs in enumerate(observations):
+                observations[i] = sample_iobs.detach().clone()
+        else:  # isinstance(observations, torch.Tensor)
+            observations = observations.detach().clone()
         self.__parameters.observations = observations
         return self
 
@@ -250,7 +279,11 @@ class CaseBuilder:
                 f"{_GenericTensor.__bound__} type, "
                 f"given {type(observation_time_steps)=}"
             )
-        self.__parameters.observation_time_steps = observation_time_steps
+        self.__parameters.observation_time_steps = (
+            observation_time_steps.detach().clone()
+            if isinstance(observation_time_steps, torch.Tensor)
+            else observation_time_steps
+        )
         return self
 
     def set_gap(self, gap: int) -> "CaseBuilder":
