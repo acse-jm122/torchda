@@ -34,7 +34,7 @@ class CaseBuilder:
 
     Methods
     -------
-    set_all_parameters(parameters: dict[str, Any] | Parameters) \
+    set_all_parameters(parameters: dict[str, Any] | Parameters)
         -> CaseBuilder:
         Set all parameters for the data assimilation case.
 
@@ -47,26 +47,26 @@ class CaseBuilder:
     set_forward_model(forward_model: Callable) -> CaseBuilder:
         Set the state transition function 'M' for EnKF.
 
-    set_observation_model(observation_model: torch.Tensor | Callable) \
+    set_observation_model(observation_model: torch.Tensor | Callable)
         -> CaseBuilder:
         Set the observation model or matrix 'H' for EnKF.
 
-    set_background_covariance_matrix\
+    set_background_covariance_matrix
         (background_covariance_matrix: torch.Tensor) -> CaseBuilder:
         Set the background covariance matrix 'B'.
 
-    set_observation_covariance_matrix\
+    set_observation_covariance_matrix
         (observation_covariance_matrix: torch.Tensor) -> CaseBuilder:
         Set the observation covariance matrix 'R'.
 
     set_background_state(background_state: torch.Tensor) -> CaseBuilder:
         Set the initial background state estimate 'xb'.
 
-    set_observations(observations: torch.Tensor | \
+    set_observations(observations: torch.Tensor |
         tuple[torch.Tensor] | list[torch.Tensor]) -> CaseBuilder:
         Set the observed measurements.
 
-    set_observation_time_steps(observation_time_steps: _GenericTensor) \
+    set_observation_time_steps(observation_time_steps: _GenericTensor)
         -> CaseBuilder:
         Set the observation time steps.
 

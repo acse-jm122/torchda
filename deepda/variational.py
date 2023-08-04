@@ -15,7 +15,7 @@ def apply_3DVar(
     learning_rate: float = 1e-3,
     logging: bool = True,
 ) -> tuple[torch.Tensor, dict[str, list]]:
-    """
+    r"""
     Implementation of the 3D-Var (Three-Dimensional Variational) assimilation.
 
     This function applies the 3D-Var assimilation algorithm to estimate
@@ -65,11 +65,11 @@ def apply_3DVar(
     intermediate_results : dict[str, list]
         A dictionary containing intermediate results during optimization.
         - 'J':
-            List of cost function values at each iteration.
+        List of cost function values at each iteration.
         - 'J_grad_norm':
-            List of norms of the cost function gradients at each iteration.
+        List of norms of the cost function gradients at each iteration.
         - 'background_states':
-            List of background state estimates at each iteration.
+        List of background state estimates at each iteration.
 
     Raises
     ------
@@ -142,7 +142,7 @@ def apply_4DVar(
     logging: bool = True,
     args: tuple = (None,),
 ) -> tuple[torch.Tensor, dict[str, list]]:
-    """
+    r"""
     Implementation of the 4D-Var (Four-Dimensional Variational) assimilation.
 
     This function applies the 4D-Var assimilation algorithm to estimate
@@ -162,9 +162,9 @@ def apply_4DVar(
         The state transition function (process model) that predicts the state
         of the system given the previous state and the time range.
         It should have the signature
-        M(x: torch.Tensor, time_range: torch.Tensor, *args) -> torch.Tensor.
+        M(x: torch.Tensor, time_range: torch.Tensor, \*args) -> torch.Tensor.
         'x' is the state vector, 'time_range' is a 1D tensor of time steps to
-        predict the state forward, and '*args' represents any additional
+        predict the state forward, and '\*args' represents any additional
         arguments required by the state transition function.
 
     H : Callable
@@ -210,13 +210,13 @@ def apply_4DVar(
     intermediate_results : dict[str, list]
         A dictionary containing intermediate results during optimization.
         - 'Jb':
-            List of background cost function values at each iteration.
+        List of background cost function values at each iteration.
         - 'Jo':
-            List of observation cost function values at each iteration.
+        List of observation cost function values at each iteration.
         - 'J_grad_norm':
-            List of norms of the cost function gradients at each iteration.
+        List of norms of the cost function gradients at each iteration.
         - 'background_states':
-            List of background state estimates at each iteration.
+        List of background state estimates at each iteration.
 
     Raises
     ------

@@ -34,7 +34,7 @@ def apply_KF(
     start_time: float = 0.0,
     args: tuple = (None,),
 ) -> torch.Tensor:
-    """
+    r"""
     Implementation of the Kalman Filter (constant P assumption).
 
     This function applies the Kalman Filter algorithm to estimate
@@ -56,9 +56,9 @@ def apply_KF(
         The state transition function (process model) that predicts the state
         of the system given the previous state and the time range.
         It should have the signature
-        M(x: torch.Tensor, time_range: torch.Tensor, *args) -> torch.Tensor.
+        M(x: torch.Tensor, time_range: torch.Tensor, \*args) -> torch.Tensor.
         'x' is the state vector, 'time_range' is a 1D tensor of time steps
-        to predict the state forward, and '*args' represents
+        to predict the state forward, and '\*args' represents
         any additional arguments required by the state transition function.
 
     H : torch.Tensor
@@ -173,7 +173,7 @@ def apply_EnKF(
     start_time: float = 0.0,
     args: tuple = (None,),
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """
+    r"""
     Implementation of the Ensemble Kalman Filter
     See e.g. Evensen, Ocean Dynamics (2003), Eqs. 44--54
 
@@ -202,9 +202,9 @@ def apply_EnKF(
         The state transition function (process model) that predicts the state
         of the system given the previous state and the time range. It should
         have the signature
-        M(x: torch.Tensor, time_range: torch.Tensor, *args) -> torch.Tensor.
+        M(x: torch.Tensor, time_range: torch.Tensor, \*args) -> torch.Tensor.
         'x' is the state vector, 'time_range' is a 1D tensor of time steps to
-        predict the state forward, and '*args' represents any additional
+        predict the state forward, and '\*args' represents any additional
         arguments required by the state transition function.
 
     H : torch.Tensor | Callable
