@@ -10,7 +10,103 @@ from .executor import Executor, Parameters
 
 
 class CaseBuilder:
-    __slots__ = "case_name", "__parameters", "__executor"
+    """
+    A builder class for configuring and executing
+    data assimilation cases.
+
+    This class provides a convenient way for users to set up
+    and execute data assimilation cases using various algorithms,
+    including Ensemble Kalman Filter (EnKF), 3D-Var, and 4D-Var.
+
+    Parameters
+    ----------
+    case_name : str, optional
+        A name for the data assimilation case.
+
+    parameters : dict[str, Any] | Parameters, optional
+        A dictionary or an instance of Parameters class containing
+        configuration parameters for the data assimilation case.
+
+    Attributes
+    ----------
+    case_name : str
+        A name for the data assimilation case.
+
+    Methods
+    -------
+    set_all_parameters(parameters: dict[str, Any] | Parameters) \
+        -> CaseBuilder:
+        Set all parameters for the data assimilation case.
+
+    set_algorithm(algorithm: Algorithms) -> CaseBuilder:
+        Set the data assimilation algorithm to use (EnKF, 3D-Var, 4D-Var).
+
+    set_device(device: Device) -> CaseBuilder:
+        Set the device (CPU or GPU) for computations.
+
+    set_forward_model(forward_model: Callable) -> CaseBuilder:
+        Set the state transition function 'M' for EnKF.
+
+    set_observation_model(observation_model: torch.Tensor | Callable) \
+        -> CaseBuilder:
+        Set the observation model or matrix 'H' for EnKF.
+
+    set_background_covariance_matrix\
+        (background_covariance_matrix: torch.Tensor) -> CaseBuilder:
+        Set the background covariance matrix 'B'.
+
+    set_observation_covariance_matrix\
+        (observation_covariance_matrix: torch.Tensor) -> CaseBuilder:
+        Set the observation covariance matrix 'R'.
+
+    set_background_state(background_state: torch.Tensor) -> CaseBuilder:
+        Set the initial background state estimate 'xb'.
+
+    set_observations(observations: torch.Tensor | \
+        tuple[torch.Tensor] | list[torch.Tensor]) -> CaseBuilder:
+        Set the observed measurements.
+
+    set_observation_time_steps(observation_time_steps: _GenericTensor) \
+        -> CaseBuilder:
+        Set the observation time steps.
+
+    set_gap(gap: int) -> CaseBuilder:
+        Set the number of time steps between observations.
+
+    set_num_steps(num_steps: int) -> CaseBuilder:
+        Set the number of time steps to propagate the state forward.
+
+    set_num_ensembles(num_ensembles: int) -> CaseBuilder:
+        Set the number of ensembles for EnKF.
+
+    set_start_time(start_time: int | float) -> CaseBuilder:
+        Set the starting time of the data assimilation process.
+
+    set_args(args: tuple) -> CaseBuilder:
+        Set additional arguments for state transition function.
+
+    set_max_iterations(max_iterations: int) -> CaseBuilder:
+        Set the maximum number of iterations for
+        optimization-based algorithms.
+
+    set_learning_rate(learning_rate: int | float) -> CaseBuilder:
+        Set the learning rate for optimization-based algorithms.
+
+    set_logging(logging: bool) -> CaseBuilder:
+        Set whether to print log messages during execution.
+
+    execute() -> dict[str, torch.Tensor]:
+        Execute the data assimilation case and return the results.
+
+    get_results_dict() -> dict[str, torch.Tensor]:
+        Get the dictionary containing the results of the executed case.
+
+    get_result(name: str) -> torch.Tensor:
+        Get a specific result from the executed case by name.
+
+    get_parameters_dict() -> dict[str, Any]:
+        Get the dictionary of configured parameters for the case.
+    """
 
     def __init__(
         self,
@@ -232,6 +328,10 @@ class CaseBuilder:
         return asdict(self.__parameters)
 
     def __repr__(self) -> str:
+        """
+        Generate a string representation of the
+        configured parameters for the case.
+        """
         params_dict = self.get_parameters_dict()
         str_list = [
             f"Parameters for Case: {self.case_name}",

@@ -1,8 +1,8 @@
-Title
+Use Deep Learning in Data Assimilation
 ========================================
 
 deepda
 --------
 
 .. automodule:: deepda
-  :members: forwardModel_r, myEnKF
+  :members: Parameters, CaseBuilder, apply_KF, apply_EnKF, apply_3DVar, apply_4DVar

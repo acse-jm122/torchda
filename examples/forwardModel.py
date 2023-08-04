@@ -1,3 +1,8 @@
+"""
+All following implementations modified from
+https://github.com/MagneticEarth/book.magneticearth.org/blob/main/data_assimilation/forwardModel.py
+'Copyright 2021 Ashley Smith'
+"""
 import torch
 
 

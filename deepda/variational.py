@@ -15,7 +15,76 @@ def apply_3DVar(
     learning_rate: float = 1e-3,
     logging: bool = True,
 ) -> tuple[torch.Tensor, dict[str, list]]:
-    """ """
+    """
+    Implementation of the 3D-Var (Three-Dimensional Variational) assimilation.
+
+    This function applies the 3D-Var assimilation algorithm to estimate
+    the state of a dynamic system given noisy measurements. It aims to find
+    the optimal state that minimizes the cost function combining background
+    error and observation error.
+
+    Parameters
+    ----------
+    H : Callable
+        The observation operator that maps the state space to the observation
+        space.
+        It should have the signature H(x: torch.Tensor) -> torch.Tensor.
+
+    B : torch.Tensor
+        The background error covariance matrix.
+        A 2D tensor of shape (state_dim, state_dim).
+        It represents the uncertainty in the background.
+
+    R : torch.Tensor
+        The observation error covariance matrix.
+        A 2D tensor of shape (observation_dim, observation_dim).
+        It models the uncertainty in the measurements.
+
+    xb : torch.Tensor
+        The background state estimate. A 1D or 2D tensor of shape
+        (state_dim,) or (sequence_length, state_dim).
+
+    y : torch.Tensor
+        The observed measurements. A 1D or 2D tensor of shape
+        (observation_dim,) or (sequence_length, observation_dim).
+
+    max_iterations : int, optional
+        The maximum number of optimization iterations. Default is 1000.
+
+    learning_rate : float, optional
+        The learning rate for the optimization algorithm. Default is 1e-3.
+
+    logging : bool, optional
+        Whether to print iteration progress. Default is True.
+
+    Returns
+    -------
+    x_optimal : torch.Tensor
+        The optimal state estimate obtained using the 3D-Var assimilation.
+
+    intermediate_results : dict[str, list]
+        A dictionary containing intermediate results during optimization.
+        - 'J':
+            List of cost function values at each iteration.
+        - 'J_grad_norm':
+            List of norms of the cost function gradients at each iteration.
+        - 'background_states':
+            List of background state estimates at each iteration.
+
+    Raises
+    ------
+    TypeError
+        If 'H' is not a callable.
+
+    Notes
+    -----
+    - The function assumes that the input tensors are properly shaped
+      and valid for the 3D-Var assimilation. Ensure that 'xb', 'B', 'R',
+      and 'y' are appropriate for the dimensions of 'H'.
+    - The 3D-Var algorithm seeks an optimal state estimate by
+      minimizing a cost function that incorporates both
+      background and observation errors.
+    """
     if not isinstance(H, Callable):
         raise TypeError(
             f"`H` must be a callable type in 3DVar, but given {type(H)=}"
@@ -32,26 +101,25 @@ def apply_3DVar(
         "background_states": [],
     }
 
-    trainer = torch.optim.Adam([new_x0], lr=learning_rate)
+    optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
     sequence_length = xb_inner.size(0)
     for n in range(max_iterations):
-        trainer.zero_grad(set_to_none=True)
+        optimizer.zero_grad(set_to_none=True)
         loss = 0
         for i in range(sequence_length):
             one_x0 = new_x0[i].ravel()
             x0_minus_xb = one_x0 - xb_inner[i].ravel()
             y_minus_H_x0 = y_inner[i].ravel() - H(one_x0).ravel()
-            loss += (
-                x0_minus_xb @ torch.linalg.solve(B, x0_minus_xb)
-                + y_minus_H_x0 @ torch.linalg.solve(R, y_minus_H_x0)
-            )
+            loss += x0_minus_xb @ torch.linalg.solve(
+                B, x0_minus_xb
+            ) + y_minus_H_x0 @ torch.linalg.solve(R, y_minus_H_x0)
         loss.backward(retain_graph=True)
         J, J_grad_norm = loss.item(), torch.norm(new_x0.grad).item()
         if logging:
             print(
                 f"Iterations: {n}, J: {J}, Norm of J gradient: {J_grad_norm}"
             )
-        trainer.step()
+        optimizer.step()
         intermediate_results["J"].append(J)
         intermediate_results["J_grad_norm"].append(J_grad_norm)
         latest_x0 = new_x0.detach().clone().view_as(xb)
@@ -75,6 +143,95 @@ def apply_4DVar(
     args: tuple = (None,),
 ) -> tuple[torch.Tensor, dict[str, list]]:
     """
+    Implementation of the 4D-Var (Four-Dimensional Variational) assimilation.
+
+    This function applies the 4D-Var assimilation algorithm to estimate
+    the state of a dynamic system given noisy measurements. It aims to find
+    the optimal state that minimizes the cost function combining background
+    error and observation error over a specified time window.
+
+    Parameters
+    ----------
+    time_obs : _GenericTensor
+        A 1D array containing the observation times in increasing order.
+
+    gap : int
+        The number of time steps between consecutive observations.
+
+    M : Callable
+        The state transition function (process model) that predicts the state
+        of the system given the previous state and the time range.
+        It should have the signature
+        M(x: torch.Tensor, time_range: torch.Tensor, *args) -> torch.Tensor.
+        'x' is the state vector, 'time_range' is a 1D tensor of time steps to
+        predict the state forward, and '*args' represents any additional
+        arguments required by the state transition function.
+
+    H : Callable
+        The observation operator that maps the state space to the observation
+        space.
+        It should have the signature H(x: torch.Tensor) -> torch.Tensor.
+
+    B : torch.Tensor
+        The background error covariance matrix.
+        A 2D tensor of shape (state_dim, state_dim).
+        It represents the uncertainty in the background.
+
+    R : torch.Tensor
+        The observation error covariance matrix.
+        A 2D tensor of shape (observation_dim, observation_dim).
+        It models the uncertainty in the measurements.
+
+    xb : torch.Tensor
+        The background state estimate. A 1D tensor of shape (state_dim).
+
+    y : tuple[torch.Tensor] | list[torch.Tensor]
+        A tuple or list of observed measurements. Each element is a 1D tensor
+        representing the measurements at a specific observation time.
+
+    max_iterations : int, optional
+        The maximum number of optimization iterations. Default is 1000.
+
+    learning_rate : float, optional
+        The learning rate for the optimization algorithm. Default is 1e-3.
+
+    logging : bool, optional
+        Whether to print iteration progress. Default is True.
+
+    args : tuple, optional
+        Additional arguments to pass to the state transition function 'M'.
+        Default is (None,).
+
+    Returns
+    -------
+    x_optimal : torch.Tensor
+        The optimal state estimate obtained using the 4D-Var assimilation.
+
+    intermediate_results : dict[str, list]
+        A dictionary containing intermediate results during optimization.
+        - 'Jb':
+            List of background cost function values at each iteration.
+        - 'Jo':
+            List of observation cost function values at each iteration.
+        - 'J_grad_norm':
+            List of norms of the cost function gradients at each iteration.
+        - 'background_states':
+            List of background state estimates at each iteration.
+
+    Raises
+    ------
+    TypeError
+        If 'M' or 'H' are not callable, or if 'y' is not a tuple or list.
+
+    Notes
+    -----
+    - The function assumes that the input tensors are properly shaped
+      and valid for the 4D-Var assimilation. Ensure that 'xb', 'B', 'R',
+      and 'y' are appropriate for the dimensions of 'M', 'H',
+      and the observation times.
+    - The 4D-Var algorithm seeks an optimal state estimate over a time window
+      by minimizing a cost function that incorporates both background and
+      observation errors.
     """
     if not isinstance(M, Callable):
         raise TypeError(
@@ -99,35 +256,30 @@ def apply_4DVar(
         "background_states": [],
     }
 
-    def Jb(x0: torch.Tensor, xb: torch.Tensor, y: torch.Tensor):
-        x0_minus_xb = x0 - xb
-        y_minus_H_x0 = y - H(x0).ravel()
-        return (
-            x0_minus_xb @ torch.linalg.solve(B, x0_minus_xb)
-            + y_minus_H_x0 @ torch.linalg.solve(R, y_minus_H_x0)
-        )
-
-    def Jo(xp: torch.Tensor, y: torch.Tensor):
-        y_minus_H_xp = y - H(xp).ravel()
-        return y_minus_H_xp @ torch.linalg.solve(R, y_minus_H_xp)
-
-    trainer = torch.optim.Adam([new_x0], lr=learning_rate)
+    optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
     device = xb.device
     for n in range(max_iterations):
-        trainer.zero_grad(set_to_none=True)
+        optimizer.zero_grad(set_to_none=True)
         current_time = time_obs[0]
-        loss_Jb = Jb(new_x0.ravel(), xb.ravel(), y[0].ravel())
-        xp = new_x0
+        # loss_Jb = Jb(new_x0, xb, y)
+        x0_minus_xb = new_x0.ravel() - xb.ravel()
+        y_minus_H_x0 = y[0].ravel() - H(new_x0.ravel()).ravel()
+        loss_Jb = x0_minus_xb @ torch.linalg.solve(
+            B, x0_minus_xb
+        ) + y_minus_H_x0 @ torch.linalg.solve(R, y_minus_H_x0)
+        x = new_x0
         loss_Jo = 0
         for iobs, time_ibos in enumerate(time_obs[1:], start=1):
             time_fw = torch.linspace(
                 current_time, time_ibos, gap + 1, device=device
             )
-            xp = M(xp, time_fw, *args)
-            for i in range(xp.size(0)):  # sequence_length
-                loss_Jo += Jo(xp[i].ravel(), y[iobs][i].ravel())
+            x = M(x, time_fw, *args)
+            for i in range(x.size(0)):  # sequence_length
+                # loss_Jo += Jo(x[i], y[iobs][i])
+                y_minus_H_xp = y[iobs][i].ravel() - H(x[i].ravel()).ravel()
+                loss_Jo += y_minus_H_xp @ torch.linalg.solve(R, y_minus_H_xp)
             current_time = time_ibos
-            xp = xp[-1]
+            x = x[-1]
         total_loss = loss_Jb + loss_Jo
         total_loss.backward(retain_graph=True)
         J_grad_norm = torch.norm(new_x0.grad).item()
@@ -136,7 +288,7 @@ def apply_4DVar(
                 f"Iterations: {n}, J: {total_loss.item()}, "
                 f"Norm of J gradient: {J_grad_norm}"
             )
-        trainer.step()
+        optimizer.step()
         intermediate_results["Jb"].append(loss_Jb.item())
         intermediate_results["Jo"].append(loss_Jo.item())
         intermediate_results["J_grad_norm"].append(J_grad_norm)
