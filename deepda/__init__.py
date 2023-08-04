@@ -1,11 +1,31 @@
 """
-The torch package contains data structures for multi-dimensional
-tensors and defines mathematical operations over these tensors.
-Additionally, it provides many utilities for efficient serialization of
-Tensors and arbitrary types, and other useful utilities.
+DeepDA
+=====
 
-It has a CUDA counterpart, that enables you to run your tensor computations
-on an NVIDIA GPU with compute capability >= 3.0.
+Use Deep Learning in Data Assimilation
+
+DeepDA is a Python package that provides a flexible and user-friendly
+framework for performing data assimilation with neural networks on
+various algorithms, including Ensemble Kalman Filter (EnKF),
+3D Variational (3D-Var) assimilation, and
+4D Variational (4D-Var) assimilation.
+
+This package is designed to simplify the process of configuring and
+executing data assimilation cases, making it easier for researchers
+and practitioners to apply data assimilation techniques with
+neural networks to their scientific and engineering problems.
+
+Modules
+--------
+- builder:
+    Provides a CaseBuilder class for configuring and
+    executing data assimilation cases.
+- kalman_filter:
+    Implements EnKF and Kalman Filter algorithms for data assimilation.
+- variational:
+    Implements 3D-Var and 4D-Var algorithms for variational data assimilation.
+
+For more information, please refer to the package documentation.
 """
 from contextlib import suppress
 from enum import Enum, auto, unique
@@ -23,7 +43,8 @@ with suppress(PackageNotFoundError):
 @unique
 class Algorithms(Enum):
     """Enumeration for various algorithms."""
-    EnKF = auto()   # Ensemble Kalman Filter
+
+    EnKF = auto()  # Ensemble Kalman Filter
     Var3D = auto()  # 3D Variational assimilation
     Var4D = auto()  # 4D Variational assimilation
 
@@ -31,6 +52,7 @@ class Algorithms(Enum):
 @unique
 class Device(Enum):
     """Enumeration for device types."""
+
     CPU = auto()
     GPU = auto()
 
