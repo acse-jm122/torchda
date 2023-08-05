@@ -16,10 +16,14 @@ and practitioners to apply data assimilation techniques with
 neural networks to their scientific and engineering problems.
 
 Modules
---------
+-------
+- parameters:
+    Contains the Parameters class for specifying data assimilation parameters.
 - builder:
     Provides a CaseBuilder class for configuring and
     executing data assimilation cases.
+- executor:
+    Implements the _Executor class for executing data assimilation cases.
 - kalman_filter:
     Implements EnKF and Kalman Filter algorithms for data assimilation.
 - variational:
@@ -64,8 +68,10 @@ _GenericTensor = TypeVar(
 )  # noqa
 
 
-from .builder import CaseBuilder, Parameters  # noqa
+from .builder import CaseBuilder  # noqa
+from .executor import _Executor  # noqa
 from .kalman_filter import apply_EnKF, apply_KF  # noqa
+from .parameters import Parameters  # noqa
 from .variational import apply_3DVar, apply_4DVar  # noqa
 
 __all__ = (
@@ -75,4 +81,5 @@ __all__ = (
     "apply_EnKF",
     "apply_3DVar",
     "apply_4DVar",
+    "_Executor",
 )

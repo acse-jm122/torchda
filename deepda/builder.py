@@ -6,7 +6,8 @@ from numpy import ndarray
 from torch._C import _LinAlgError as LinAlgError
 
 from . import Algorithms, Device, _GenericTensor
-from .executor import Executor, Parameters
+from .executor import _Executor
+from .parameters import Parameters
 
 
 class CaseBuilder:
@@ -53,9 +54,6 @@ class CaseBuilder:
     set_observation_model(observation_model: torch.Tensor | Callable)
         -> CaseBuilder:
         Set the observation model or matrix 'H' for EnKF.
-
-    check_covariance_matrix(cov_matrix: torch.Tensor) -> None:
-        Check if a given covariance matrix is valid.
 
     set_background_covariance_matrix
         (background_covariance_matrix: torch.Tensor) -> CaseBuilder:
@@ -123,7 +121,7 @@ class CaseBuilder:
         self.__parameters = Parameters()
         if parameters is not None:
             self.set_parameters(parameters)
-        self.__executor = Executor()
+        self.__executor = _Executor()
 
     def set_parameters(
         self, parameters: dict[str, Any] | Parameters

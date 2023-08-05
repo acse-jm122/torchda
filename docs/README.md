@@ -1,0 +1,1 @@
+Open `/html/index.html` in browser to see [HTML documentation](https://github.com/acse-jm122/irp-acse-jm122/blob/main/docs/html/index.html).

@@ -12,4 +12,4 @@ master_doc = "index"
 exclude_patterns = ["_build"]
 autoclass_content = "both"
 
-author = "Jingyang Min"
+author = "acse-jm122"

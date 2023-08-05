@@ -49,8 +49,18 @@ neural networks to their scientific and engineering problems.</p>
 <h4>Modules<a class="headerlink" href="#modules" title="Permalink to this heading">¶</a></h4>
 <ul class="simple">
 <li><dl class="simple">
+<dt>parameters:</dt><dd><p>Contains the Parameters class for specifying data assimilation parameters.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
 <dt>builder:</dt><dd><p>Provides a CaseBuilder class for configuring and
 executing data assimilation cases.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>executor:</dt><dd><p>Implements the _Executor class for executing data assimilation cases.</p>
 </dd>
 </dl>
 </li>
@@ -70,7 +80,7 @@ executing data assimilation cases.</p>
 </section>
 <dl class="py class">
 <dt class="sig sig-object py" id="deepda.CaseBuilder">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepda.</span></span><span class="sig-name descname"><span class="pre">CaseBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#deepda.Parameters" title="deepda.executor.Parameters"><span class="pre">Parameters</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepda.CaseBuilder" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepda.</span></span><span class="sig-name descname"><span class="pre">CaseBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#deepda.Parameters" title="deepda.parameters.Parameters"><span class="pre">Parameters</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepda.CaseBuilder" title="Permalink to this definition">¶</a></dt>
 <dd><p>A builder class for configuring and executing
 data assimilation cases.</p>
 <p>This class provides a convenient way for users to set up
@@ -97,10 +107,16 @@ configuration parameters for the data assimilation case.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="deepda.CaseBuilder.set_all_parameters">
-<span class="sig-name descname"><span class="pre">set_all_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#deepda.Parameters" title="deepda.Parameters"><span class="pre">Parameters</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepda.CaseBuilder.set_all_parameters" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="deepda.CaseBuilder.set_parameters">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#deepda.Parameters" title="deepda.Parameters"><span class="pre">Parameters</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepda.CaseBuilder.set_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>-&gt; CaseBuilder:
-Set all parameters for the data assimilation case.</p>
+Set a batch of parameters for the data assimilation case.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="deepda.CaseBuilder.set_parameter">
+<span class="sig-name descname"><span class="pre">set_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CaseBuilder:</span></span></span><a class="headerlink" href="#deepda.CaseBuilder.set_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a parameter for the data assimilation case.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -233,6 +249,21 @@ optimization-based algorithms.</p>
 <dt class="sig sig-object py" id="deepda.CaseBuilder.get_parameters_dict">
 <span class="sig-name descname"><span class="pre">get_parameters_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict[str,</span> <span class="pre">Any]:</span></span></span><a class="headerlink" href="#deepda.CaseBuilder.get_parameters_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the dictionary of configured parameters for the case.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="deepda.CaseBuilder.check_covariance_matrix">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_covariance_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cov_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#deepda.CaseBuilder.check_covariance_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a given covariance matrix is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cov_matrix</strong> (<em>torch.Tensor</em>) – The covariance matrix to be checked.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>LinAlgError</strong> – If the covariance matrix is not a valid square matrix,
+    not symmetric, or is singular.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -452,6 +483,85 @@ optimization process.</p></li>
 <li><p>For 4D-Var, <cite>observations</cite> should be a tuple or list of tensors, and
 <cite>observation_time_steps</cite> should have at least 2 time points.</p></li>
 </ul>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="deepda._Executor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepda.</span></span><span class="sig-name descname"><span class="pre">_Executor</span></span><a class="headerlink" href="#deepda._Executor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data assimilation executor class.</p>
+<p>This class provides a high-level integration for configuring and running
+data assimilation algorithms. It supports Ensemble Kalman Filter (EnKF),
+3D-Var, and 4D-Var.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>There is no validation for input parameters in this class.</p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="deepda._Executor.get_result">
+<span class="sig-name descname"><span class="pre">get_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#deepda._Executor.get_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a deep copy of a specific result by name
+from the results dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the result to retrieve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A deep copy of the requested result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="deepda._Executor.get_results_dict">
+<span class="sig-name descname"><span class="pre">get_results_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deepda._Executor.get_results_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a deep copy of the results dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A deep copy of the results dictionary containing
+data assimilation results.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict[str, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="deepda._Executor.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deepda._Executor.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the selected data assimilation algorithm and return results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary containing the results of the
+data assimilation algorithm.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict[str, torch.Tensor | dict[str, list]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="deepda._Executor.set_input_parameters">
+<span class="sig-name descname"><span class="pre">set_input_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#deepda.Parameters" title="deepda.parameters.Parameters"><span class="pre">Parameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#deepda._Executor" title="deepda.executor._Executor"><span class="pre">_Executor</span></a></span></span><a class="headerlink" href="#deepda._Executor.set_input_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the input parameters for the data assimilation algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parameters</strong> (<a class="reference internal" href="#deepda.Parameters" title="deepda.Parameters"><em>Parameters</em></a>) – An instance of the Parameters data class containing
+the configuration for the data assimilation algorithm.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The _Executor instance with updated input parameters.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#deepda._Executor" title="deepda._Executor">_Executor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
