@@ -96,8 +96,8 @@ class CaseBuilder:
     set_learning_rate(learning_rate: int | float) -> CaseBuilder:
         Set the learning rate for optimization-based algorithms.
 
-    set_logging(logging: bool) -> CaseBuilder:
-        Set whether to print log messages during execution.
+    set_record_log(record_log: bool) -> CaseBuilder:
+        Set whether to record and print log messages during execution.
 
     execute() -> dict[str, torch.Tensor]:
         Execute the data assimilation case and return the results.
@@ -340,10 +340,12 @@ class CaseBuilder:
         self.__parameters.learning_rate = learning_rate
         return self
 
-    def set_logging(self, logging: bool) -> "CaseBuilder":
-        if not isinstance(logging, bool):
-            raise TypeError(f"logging must be a bool, given {type(logging)=}")
-        self.__parameters.logging = logging
+    def set_record_log(self, record_log: bool) -> "CaseBuilder":
+        if not isinstance(record_log, bool):
+            raise TypeError(
+                f"record_log must be a bool, given {type(record_log)=}"
+            )
+        self.__parameters.record_log = record_log
         return self
 
     def execute(self) -> dict[str, torch.Tensor]:

@@ -104,7 +104,7 @@ class _Executor:
             self.__parameters.observations,
             self.__parameters.max_iterations,
             self.__parameters.learning_rate,
-            self.__parameters.logging,
+            self.__parameters.record_log,
         )
 
     def __call_apply_4DVar(self) -> tuple[torch.Tensor, dict[str, list]]:
@@ -129,7 +129,7 @@ class _Executor:
             self.__parameters.observations,
             self.__parameters.max_iterations,
             self.__parameters.learning_rate,
-            self.__parameters.logging,
+            self.__parameters.record_log,
             self.__parameters.args,
         )
 

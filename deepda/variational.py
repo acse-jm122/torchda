@@ -1,3 +1,5 @@
+import logging
+from datetime import datetime
 from typing import Callable
 
 import torch
@@ -13,7 +15,7 @@ def apply_3DVar(
     y: torch.Tensor,
     max_iterations: int = 1000,
     learning_rate: float = 1e-3,
-    logging: bool = True,
+    record_log: bool = True,
 ) -> tuple[torch.Tensor, dict[str, list]]:
     r"""
     Implementation of the 3D-Var (Three-Dimensional Variational) assimilation.
@@ -54,8 +56,9 @@ def apply_3DVar(
     learning_rate : float, optional
         The learning rate for the optimization algorithm. Default is 1e-3.
 
-    logging : bool, optional
-        Whether to print iteration progress. Default is True.
+    record_log : bool, optional
+        Whether to record and print logs for iteration progress.
+        Default is True.
 
     Returns
     -------
@@ -89,6 +92,15 @@ def apply_3DVar(
         raise TypeError(
             f"`H` must be a callable type in 3DVar, but given {type(H)=}"
         )
+    if record_log:
+        # Set up logging with a timestamp in the log file name
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S.%f")
+        logger = logging.getLogger(timestamp)
+        logger.addHandler(
+            logging.FileHandler(f"3dvar_data_assimilation_{timestamp}.log")
+        )
+        logger.addHandler(logging.StreamHandler())
+        logger.setLevel(logging.INFO)
 
     xb_inner = xb.unsqueeze(0) if xb.ndim == 1 else xb
     y_inner = y.unsqueeze(0) if y.ndim == 1 else y
@@ -105,22 +117,23 @@ def apply_3DVar(
     sequence_length = xb_inner.size(0)
     for n in range(max_iterations):
         optimizer.zero_grad(set_to_none=True)
-        loss = 0
+        loss_J = 0
         for i in range(sequence_length):
             one_x0 = new_x0[i].ravel()
             x0_minus_xb = one_x0 - xb_inner[i].ravel()
             y_minus_H_x0 = y_inner[i].ravel() - H(one_x0).ravel()
-            loss += x0_minus_xb @ torch.linalg.solve(
+            loss_J += x0_minus_xb @ torch.linalg.solve(
                 B, x0_minus_xb
             ) + y_minus_H_x0 @ torch.linalg.solve(R, y_minus_H_x0)
-        loss.backward(retain_graph=True)
-        J, J_grad_norm = loss.item(), torch.norm(new_x0.grad).item()
-        if logging:
-            print(
-                f"Iterations: {n}, J: {J}, Norm of J gradient: {J_grad_norm}"
+        loss_J.backward(retain_graph=True)
+        loss_J, J_grad_norm = loss_J.item(), torch.norm(new_x0.grad).item()
+        if record_log:
+            logger.info(
+                f"Iterations: {n}, J: {loss_J}, "
+                f"Norm of J gradient: {J_grad_norm}"
             )
         optimizer.step()
-        intermediate_results["J"].append(J)
+        intermediate_results["J"].append(loss_J)
         intermediate_results["J_grad_norm"].append(J_grad_norm)
         latest_x0 = new_x0.detach().clone().view_as(xb)
         intermediate_results["background_states"].append(latest_x0)
@@ -139,7 +152,7 @@ def apply_4DVar(
     y: tuple[torch.Tensor] | list[torch.Tensor],
     max_iterations: int = 1000,
     learning_rate: float = 1e-3,
-    logging: bool = True,
+    record_log: bool = True,
     args: tuple = (None,),
 ) -> tuple[torch.Tensor, dict[str, list]]:
     r"""
@@ -195,8 +208,9 @@ def apply_4DVar(
     learning_rate : float, optional
         The learning rate for the optimization algorithm. Default is 1e-3.
 
-    logging : bool, optional
-        Whether to print iteration progress. Default is True.
+    record_log : bool, optional
+        Whether to record and print logs for iteration progress.
+        Default is True.
 
     args : tuple, optional
         Additional arguments to pass to the state transition function 'M'.
@@ -213,6 +227,8 @@ def apply_4DVar(
         List of background cost function values at each iteration.
         - 'Jo':
         List of observation cost function values at each iteration.
+        - 'J':
+        List of cost function values at each iteration.
         - 'J_grad_norm':
         List of norms of the cost function gradients at each iteration.
         - 'background_states':
@@ -246,12 +262,22 @@ def apply_4DVar(
             "`y` must be a tuple or list of Tensor in 4DVar, "
             f"but given {type(y)=}"
         )
+    if record_log:
+        # Set up logger with a timestamp in the log file name
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S.%f")
+        logger = logging.getLogger(timestamp)
+        logger.addHandler(
+            logging.FileHandler(f"4dvar_data_assimilation_{timestamp}.log")
+        )
+        logger.addHandler(logging.StreamHandler())
+        logger.setLevel(logging.INFO)
 
     new_x0 = torch.nn.Parameter(xb.detach().clone())
 
     intermediate_results = {
         "Jb": [],
         "Jo": [],
+        "J": [],
         "J_grad_norm": [],
         "background_states": [],
     }
@@ -280,17 +306,19 @@ def apply_4DVar(
                 loss_Jo += y_minus_H_xp @ torch.linalg.solve(R, y_minus_H_xp)
             current_time = time_ibos
             x = x[-1]
-        total_loss = loss_Jb + loss_Jo
-        total_loss.backward(retain_graph=True)
-        J_grad_norm = torch.norm(new_x0.grad).item()
-        if logging:
-            print(
-                f"Iterations: {n}, J: {total_loss.item()}, "
-                f"Norm of J gradient: {J_grad_norm}"
+        loss_J = loss_Jb + loss_Jo
+        loss_J.backward(retain_graph=True)
+        loss_Jb, loss_Jo = loss_Jb.item(), loss_Jo.item()
+        loss_J, J_grad_norm = loss_J.item(), torch.norm(new_x0.grad).item()
+        if record_log:
+            logger.info(
+                f"Iterations: {n}, Jb: {loss_Jb}, Jo: {loss_Jo}, "
+                f"J: {loss_J}, Norm of J gradient: {J_grad_norm}"
             )
         optimizer.step()
-        intermediate_results["Jb"].append(loss_Jb.item())
-        intermediate_results["Jo"].append(loss_Jo.item())
+        intermediate_results["Jb"].append(loss_Jb)
+        intermediate_results["Jo"].append(loss_Jo)
+        intermediate_results["J"].append(loss_J)
         intermediate_results["J_grad_norm"].append(J_grad_norm)
         latest_x0 = new_x0.detach().clone()
         intermediate_results["background_states"].append(latest_x0)

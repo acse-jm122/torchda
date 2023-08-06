@@ -72,8 +72,9 @@ class Parameters:
     learning_rate : int | float, optional
         The learning rate for optimization-based algorithms (3D-Var, 4D-Var).
 
-    logging : bool, optional
-        Whether to print log messages during execution. Default is True.
+    record_log : bool, optional
+        Whether to record and print logs for iteration progress.
+        Default is True.
 
     args : tuple, optional
         Additional arguments to pass to state transition function.
@@ -107,5 +108,5 @@ class Parameters:
     start_time: Optional[int | float] = 0.0
     max_iterations: Optional[int] = 1000
     learning_rate: Optional[int | float] = 0.001
-    logging: Optional[bool] = True
+    record_log: Optional[bool] = True
     args: Optional[tuple] = (None,)
