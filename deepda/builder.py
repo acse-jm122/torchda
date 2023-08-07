@@ -3,7 +3,7 @@ from typing import Any, Callable
 
 import torch
 from numpy import ndarray
-from torch._C import _LinAlgError as LinAlgError
+from numpy.linalg import LinAlgError
 
 from . import Algorithms, Device, _GenericTensor
 from .executor import _Executor
