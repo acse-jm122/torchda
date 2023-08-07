@@ -1,6 +1,9 @@
 # IRP2023
 AI for science: learning the map function from observation space to hidden state space in data assimilation
 
+[![flake8](https://github.com/acse-jm122/irp-acse-jm122/actions/workflows/flake8-format-test.yml/badge.svg)](https://github.com/acse-jm122/irp-acse-jm122/actions/workflows/flake8-format-test.yml)
+[![pytest](https://github.com/acse-jm122/irp-acse-jm122/actions/workflows/pytest-conda.yml/badge.svg)](https://github.com/acse-jm122/irp-acse-jm122/actions/workflows/pytest-conda.yml)
+
 Dependencies
 ------------
 * Python 3.10 or later
