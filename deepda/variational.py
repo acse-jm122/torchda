@@ -108,9 +108,9 @@ def apply_3DVar(
     new_x0 = torch.nn.Parameter(xb_inner.detach().clone())
 
     intermediate_results = {
-        "J": [],
-        "J_grad_norm": [],
-        "background_states": [],
+        "J": [0] * max_iterations,
+        "J_grad_norm": [0] * max_iterations,
+        "background_states": [0] * max_iterations,
     }
 
     optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
@@ -133,10 +133,10 @@ def apply_3DVar(
                 f"Norm of J gradient: {J_grad_norm}"
             )
         optimizer.step()
-        intermediate_results["J"].append(loss_J)
-        intermediate_results["J_grad_norm"].append(J_grad_norm)
+        intermediate_results["J"][n] = loss_J
+        intermediate_results["J_grad_norm"][n] = J_grad_norm
         latest_x0 = new_x0.detach().clone().view_as(xb)
-        intermediate_results["background_states"].append(latest_x0)
+        intermediate_results["background_states"][n] = latest_x0
 
     return latest_x0, intermediate_results
 
@@ -275,11 +275,11 @@ def apply_4DVar(
     new_x0 = torch.nn.Parameter(xb.detach().clone())
 
     intermediate_results = {
-        "Jb": [],
-        "Jo": [],
-        "J": [],
-        "J_grad_norm": [],
-        "background_states": [],
+        "Jb": [0] * max_iterations,
+        "Jo": [0] * max_iterations,
+        "J": [0] * max_iterations,
+        "J_grad_norm": [0] * max_iterations,
+        "background_states": [0] * max_iterations,
     }
 
     optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
@@ -316,11 +316,11 @@ def apply_4DVar(
                 f"J: {loss_J}, Norm of J gradient: {J_grad_norm}"
             )
         optimizer.step()
-        intermediate_results["Jb"].append(loss_Jb)
-        intermediate_results["Jo"].append(loss_Jo)
-        intermediate_results["J"].append(loss_J)
-        intermediate_results["J_grad_norm"].append(J_grad_norm)
+        intermediate_results["Jb"][n] = loss_Jb
+        intermediate_results["Jo"][n] = loss_Jo
+        intermediate_results["J"][n] = loss_J
+        intermediate_results["J_grad_norm"][n] = J_grad_norm
         latest_x0 = new_x0.detach().clone()
-        intermediate_results["background_states"].append(latest_x0)
+        intermediate_results["background_states"][n] = latest_x0
 
     return latest_x0, intermediate_results
