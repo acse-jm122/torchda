@@ -359,16 +359,20 @@ class CaseBuilder:
         ----------
         name : str
             The name of the result to retrieve.
-            - 'average_ensemble_all_states':
-            Only available when algorithm is ``Algorithms.EnKF``.
-            - 'each_ensemble_all_states':
-            Only available when algorithm is ``Algorithms.EnKF``.
-            - 'assimilated_background_state':
-            Only available when algorithm is ``Algorithms.Var3D``
-            or ``Algorithms.Var4D``.
-            - 'intermediate_results':
-            Only available when algorithm is ``Algorithms.Var3D``
-            or ``Algorithms.Var4D``.
+
+            - 'average_ensemble_all_states'
+                Only available when algorithm is ``Algorithms.EnKF``.
+
+            - 'each_ensemble_all_states'
+                Only available when algorithm is ``Algorithms.EnKF``.
+
+            - 'assimilated_background_state'
+                Only available when algorithm is ``Algorithms.Var3D``
+                or ``Algorithms.Var4D``.
+
+            - 'intermediate_results'
+                Only available when algorithm is ``Algorithms.Var3D``
+                or ``Algorithms.Var4D``.
 
         Returns
         -------

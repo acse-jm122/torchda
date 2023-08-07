@@ -176,16 +176,20 @@ class _Executor:
         dict[str, torch.Tensor | dict[str, list]]
             A dictionary containing the results of the
             data assimilation algorithm.
-            - 'average_ensemble_all_states':
-            Only available when algorithm is ``Algorithms.EnKF``.
-            - 'each_ensemble_all_states':
-            Only available when algorithm is ``Algorithms.EnKF``.
-            - 'assimilated_background_state':
-            Only available when algorithm is ``Algorithms.Var3D``
-            or ``Algorithms.Var4D``.
-            - 'intermediate_results':
-            Only available when algorithm is ``Algorithms.Var3D``
-            or ``Algorithms.Var4D``.
+
+            - 'average_ensemble_all_states'
+                Only available when algorithm is ``Algorithms.EnKF``.
+
+            - 'each_ensemble_all_states'
+                Only available when algorithm is ``Algorithms.EnKF``.
+
+            - 'assimilated_background_state'
+                Only available when algorithm is ``Algorithms.Var3D``
+                or ``Algorithms.Var4D``.
+
+            - 'intermediate_results'
+                Only available when algorithm is ``Algorithms.Var3D``
+                or ``Algorithms.Var4D``.
         """
         self.__setup_device()
         if self.__parameters is None:
@@ -228,16 +232,20 @@ class _Executor:
         dict[str, torch.Tensor | dict[str, list]]
             A deep copy of the results dictionary containing
             data assimilation results.
-            - 'average_ensemble_all_states':
-            Only available when algorithm is ``Algorithms.EnKF``.
-            - 'each_ensemble_all_states':
-            Only available when algorithm is ``Algorithms.EnKF``.
-            - 'assimilated_background_state':
-            Only available when algorithm is ``Algorithms.Var3D``
-            or ``Algorithms.Var4D``.
-            - 'intermediate_results':
-            Only available when algorithm is ``Algorithms.Var3D``
-            or ``Algorithms.Var4D``.
+
+            - 'average_ensemble_all_states'
+                Only available when algorithm is ``Algorithms.EnKF``.
+
+            - 'each_ensemble_all_states'
+                Only available when algorithm is ``Algorithms.EnKF``.
+
+            - 'assimilated_background_state'
+                Only available when algorithm is ``Algorithms.Var3D``
+                or ``Algorithms.Var4D``.
+
+            - 'intermediate_results'
+                Only available when algorithm is ``Algorithms.Var3D``
+                or ``Algorithms.Var4D``.
         """
         if self.__results:
             return deepcopy(self.__results)
@@ -252,16 +260,20 @@ class _Executor:
         ----------
         name : str
             The name of the result to retrieve.
-            - 'average_ensemble_all_states':
-            Only available when algorithm is `Algorithms.EnKF`.
-            - 'each_ensemble_all_states':
-            Only available when algorithm is `Algorithms.EnKF`.
-            - 'assimilated_background_state':
-            Only available when algorithm is `Algorithms.Var3D`
-            or `Algorithms.Var4D`.
-            - 'intermediate_results':
-            Only available when algorithm is `Algorithms.Var3D`
-            or `Algorithms.Var4D`.
+
+            - 'average_ensemble_all_states'
+                Only available when algorithm is ``Algorithms.EnKF``.
+
+            - 'each_ensemble_all_states'
+                Only available when algorithm is ``Algorithms.EnKF``.
+
+            - 'assimilated_background_state'
+                Only available when algorithm is ``Algorithms.Var3D``
+                or ``Algorithms.Var4D``.
+
+            - 'intermediate_results'
+                Only available when algorithm is ``Algorithms.Var3D``
+                or ``Algorithms.Var4D``.
 
         Returns
         -------

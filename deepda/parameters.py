@@ -83,12 +83,12 @@ class Parameters:
     -----
     - Ensure that the provided tensors are properly shaped and compatible with
       the algorithm's requirements.
-    - For EnKF, `forward_model` should be provided,
-      and `num_steps` should be > 0.
-    - For 3D-Var and 4D-Var, `max_iterations` and `learning_rate` control the
+    - For EnKF, 'forward_model' should be provided,
+      and 'num_steps' should be > 0.
+    - For 3D-Var and 4D-Var, 'max_iterations' and 'learning_rate' control the
       optimization process.
-    - For 4D-Var, `observations` should be a tuple or list of tensors, and
-      `observation_time_steps` should have at least 2 time points.
+    - For 4D-Var, 'observations' should be a tuple or list of tensors, and
+      'observation_time_steps' should have at least 2 time points.
     """
 
     algorithm: Algorithms = Algorithms.EnKF

@@ -67,12 +67,15 @@ def apply_3DVar(
 
     intermediate_results : dict[str, list]
         A dictionary containing intermediate results during optimization.
-        - 'J':
-        List of cost function values at each iteration.
-        - 'J_grad_norm':
-        List of norms of the cost function gradients at each iteration.
-        - 'background_states':
-        List of background state estimates at each iteration.
+
+        - 'J'
+            List of cost function values at each iteration.
+
+        - 'J_grad_norm'
+            List of norms of the cost function gradients at each iteration.
+
+        - 'background_states'
+            List of background state estimates at each iteration.
 
     Raises
     ------
@@ -223,16 +226,21 @@ def apply_4DVar(
 
     intermediate_results : dict[str, list]
         A dictionary containing intermediate results during optimization.
-        - 'Jb':
-        List of background cost function values at each iteration.
-        - 'Jo':
-        List of observation cost function values at each iteration.
-        - 'J':
-        List of cost function values at each iteration.
-        - 'J_grad_norm':
-        List of norms of the cost function gradients at each iteration.
-        - 'background_states':
-        List of background state estimates at each iteration.
+
+        - 'Jb'
+            List of background cost function values at each iteration.
+
+        - 'Jo'
+            List of observation cost function values at each iteration.
+
+        - 'J'
+            List of cost function values at each iteration.
+
+        - 'J_grad_norm'
+            List of norms of the cost function gradients at each iteration.
+
+        - 'background_states'
+            List of background state estimates at each iteration.
 
     Raises
     ------

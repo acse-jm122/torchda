@@ -222,27 +222,21 @@ optimization-based algorithms.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="deepda.CaseBuilder.set_logging">
-<span class="sig-name descname"><span class="pre">set_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CaseBuilder:</span></span></span><a class="headerlink" href="#deepda.CaseBuilder.set_logging" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set whether to print log messages during execution.</p>
+<dt class="sig sig-object py" id="deepda.CaseBuilder.set_record_log">
+<span class="sig-name descname"><span class="pre">set_record_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CaseBuilder:</span></span></span><a class="headerlink" href="#deepda.CaseBuilder.set_record_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set whether to record and print log messages during execution.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="deepda.CaseBuilder.execute">
-<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict[str,</span> <span class="pre">torch.Tensor]:</span></span></span><a class="headerlink" href="#deepda.CaseBuilder.execute" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict[str,</span> <span class="pre">torch.Tensor</span> <span class="pre">|</span> <span class="pre">dict[str,</span> <span class="pre">list]]:</span></span></span><a class="headerlink" href="#deepda.CaseBuilder.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute the data assimilation case and return the results.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="deepda.CaseBuilder.get_results_dict">
-<span class="sig-name descname"><span class="pre">get_results_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict[str,</span> <span class="pre">torch.Tensor]:</span></span></span><a class="headerlink" href="#deepda.CaseBuilder.get_results_dict" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_results_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict[str,</span> <span class="pre">torch.Tensor</span> <span class="pre">|</span> <span class="pre">dict[str,</span> <span class="pre">list]]:</span></span></span><a class="headerlink" href="#deepda.CaseBuilder.get_results_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the dictionary containing the results of the executed case.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="deepda.CaseBuilder.get_result">
-<span class="sig-name descname"><span class="pre">get_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor:</span></span></span><a class="headerlink" href="#deepda.CaseBuilder.get_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get a specific result from the executed case by name.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -266,11 +260,53 @@ optimization-based algorithms.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="deepda.CaseBuilder.get_result">
+<span class="sig-name descname"><span class="pre">get_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deepda.CaseBuilder.get_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a specific result from the executed case by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – <p>The name of the result to retrieve.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>’average_ensemble_all_states’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.EnKF</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’each_ensemble_all_states’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.EnKF</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’assimilated_background_state’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.Var3D</span></code>
+or <code class="docutils literal notranslate"><span class="pre">Algorithms.Var4D</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’intermediate_results’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.Var3D</span></code>
+or <code class="docutils literal notranslate"><span class="pre">Algorithms.Var4D</span></code>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A requested result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor | dict[str, list]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="deepda.Parameters">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepda.</span></span><span class="sig-name descname"><span class="pre">Parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Algorithms</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Algorithms.EnKF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_covariance_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation_covariance_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Device</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Device.CPU</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation_time_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_GenericTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_ensembles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(None,)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepda.Parameters" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deepda.</span></span><span class="sig-name descname"><span class="pre">Parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Algorithms</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Algorithms.EnKF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_covariance_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation_covariance_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Device</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Device.CPU</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation_time_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_GenericTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_ensembles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(None,)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepda.Parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Data class to hold parameters for data assimilation.</p>
 <p>This class encapsulates the parameters required for data assimilation
 algorithms, such as Ensemble Kalman Filter (EnKF), 3D-Var, and 4D-Var.</p>
@@ -451,9 +487,10 @@ optimization-based algorithms (3D-Var, 4D-Var).</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="deepda.Parameters.logging">
-<span class="sig-name descname"><span class="pre">logging</span></span><a class="headerlink" href="#deepda.Parameters.logging" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whether to print log messages during execution. Default is True.</p>
+<dt class="sig sig-object py" id="deepda.Parameters.record_log">
+<span class="sig-name descname"><span class="pre">record_log</span></span><a class="headerlink" href="#deepda.Parameters.record_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to record and print logs for iteration progress.
+Default is True.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool, optional</p>
@@ -476,12 +513,12 @@ optimization-based algorithms (3D-Var, 4D-Var).</p>
 <ul class="simple">
 <li><p>Ensure that the provided tensors are properly shaped and compatible with
 the algorithm’s requirements.</p></li>
-<li><p>For EnKF, <cite>forward_model</cite> should be provided,
-and <cite>num_steps</cite> should be &gt; 0.</p></li>
-<li><p>For 3D-Var and 4D-Var, <cite>max_iterations</cite> and <cite>learning_rate</cite> control the
+<li><p>For EnKF, ‘forward_model’ should be provided,
+and ‘num_steps’ should be &gt; 0.</p></li>
+<li><p>For 3D-Var and 4D-Var, ‘max_iterations’ and ‘learning_rate’ control the
 optimization process.</p></li>
-<li><p>For 4D-Var, <cite>observations</cite> should be a tuple or list of tensors, and
-<cite>observation_time_steps</cite> should have at least 2 time points.</p></li>
+<li><p>For 4D-Var, ‘observations’ should be a tuple or list of tensors, and
+‘observation_time_steps’ should have at least 2 time points.</p></li>
 </ul>
 </dd></dl>
 
@@ -498,33 +535,83 @@ data assimilation algorithms. It supports Ensemble Kalman Filter (EnKF),
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="deepda._Executor.get_result">
-<span class="sig-name descname"><span class="pre">get_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#deepda._Executor.get_result" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deepda._Executor.get_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a deep copy of a specific result by name
 from the results dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the result to retrieve.</p>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – <p>The name of the result to retrieve.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>’average_ensemble_all_states’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.EnKF</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’each_ensemble_all_states’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.EnKF</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’assimilated_background_state’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.Var3D</span></code>
+or <code class="docutils literal notranslate"><span class="pre">Algorithms.Var4D</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’intermediate_results’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.Var3D</span></code>
+or <code class="docutils literal notranslate"><span class="pre">Algorithms.Var4D</span></code>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A deep copy of the requested result.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>torch.Tensor</p>
+<dd class="field-odd"><p>torch.Tensor | dict[str, list]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="deepda._Executor.get_results_dict">
-<span class="sig-name descname"><span class="pre">get_results_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deepda._Executor.get_results_dict" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_results_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deepda._Executor.get_results_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a deep copy of the results dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A deep copy of the results dictionary containing
+<dd class="field-odd"><p><p>A deep copy of the results dictionary containing
 data assimilation results.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>’average_ensemble_all_states’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.EnKF</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’each_ensemble_all_states’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.EnKF</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’assimilated_background_state’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.Var3D</span></code>
+or <code class="docutils literal notranslate"><span class="pre">Algorithms.Var4D</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’intermediate_results’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.Var3D</span></code>
+or <code class="docutils literal notranslate"><span class="pre">Algorithms.Var4D</span></code>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict[str, torch.Tensor]</p>
+<dd class="field-even"><p>dict[str, torch.Tensor | dict[str, list]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -535,8 +622,33 @@ data assimilation results.</p>
 <dd><p>Run the selected data assimilation algorithm and return results.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary containing the results of the
+<dd class="field-odd"><p><p>A dictionary containing the results of the
 data assimilation algorithm.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>’average_ensemble_all_states’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.EnKF</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’each_ensemble_all_states’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.EnKF</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’assimilated_background_state’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.Var3D</span></code>
+or <code class="docutils literal notranslate"><span class="pre">Algorithms.Var4D</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’intermediate_results’</dt><dd><p>Only available when algorithm is <code class="docutils literal notranslate"><span class="pre">Algorithms.Var3D</span></code>
+or <code class="docutils literal notranslate"><span class="pre">Algorithms.Var4D</span></code>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict[str, torch.Tensor | dict[str, list]]</p>
@@ -566,7 +678,7 @@ the configuration for the data assimilation algorithm.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="deepda.apply_3DVar">
-<span class="sig-prename descclassname"><span class="pre">deepda.</span></span><span class="sig-name descname"><span class="pre">apply_3DVar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deepda.apply_3DVar" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">deepda.</span></span><span class="sig-name descname"><span class="pre">apply_3DVar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deepda.apply_3DVar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implementation of the 3D-Var (Three-Dimensional Variational) assimilation.</p>
 <p>This function applies the 3D-Var assimilation algorithm to estimate
 the state of a dynamic system given noisy measurements. It aims to find
@@ -590,19 +702,32 @@ It models the uncertainty in the measurements.</p></li>
 (observation_dim,) or (sequence_length, observation_dim).</p></li>
 <li><p><strong>max_iterations</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of optimization iterations. Default is 1000.</p></li>
 <li><p><strong>learning_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – The learning rate for the optimization algorithm. Default is 1e-3.</p></li>
-<li><p><strong>logging</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to print iteration progress. Default is True.</p></li>
+<li><p><strong>record_log</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to record and print logs for iteration progress.
+Default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>x_optimal</strong> (<em>torch.Tensor</em>) – The optimal state estimate obtained using the 3D-Var assimilation.</p></li>
-<li><p><strong>intermediate_results</strong> (<em>dict[str, list]</em>) – A dictionary containing intermediate results during optimization.
-- ‘J’:
-List of cost function values at each iteration.
-- ‘J_grad_norm’:
-List of norms of the cost function gradients at each iteration.
-- ‘background_states’:
-List of background state estimates at each iteration.</p></li>
+<li><p><strong>intermediate_results</strong> (<em>dict[str, list]</em>) – A dictionary containing intermediate results during optimization.</p>
+<ul>
+<li><dl class="simple">
+<dt>’J’</dt><dd><p>List of cost function values at each iteration.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’J_grad_norm’</dt><dd><p>List of norms of the cost function gradients at each iteration.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’background_states’</dt><dd><p>List of background state estimates at each iteration.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</li>
 </ul>
 </p>
 </dd>
@@ -623,7 +748,7 @@ background and observation errors.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="deepda.apply_4DVar">
-<span class="sig-prename descclassname"><span class="pre">deepda.</span></span><span class="sig-name descname"><span class="pre">apply_4DVar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_obs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_GenericTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(None,)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deepda.apply_4DVar" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">deepda.</span></span><span class="sig-name descname"><span class="pre">apply_4DVar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_obs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_GenericTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(None,)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#deepda.apply_4DVar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implementation of the 4D-Var (Four-Dimensional Variational) assimilation.</p>
 <p>This function applies the 4D-Var assimilation algorithm to estimate
 the state of a dynamic system given noisy measurements. It aims to find
@@ -655,7 +780,8 @@ It models the uncertainty in the measurements.</p></li>
 representing the measurements at a specific observation time.</p></li>
 <li><p><strong>max_iterations</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of optimization iterations. Default is 1000.</p></li>
 <li><p><strong>learning_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – The learning rate for the optimization algorithm. Default is 1e-3.</p></li>
-<li><p><strong>logging</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to print iteration progress. Default is True.</p></li>
+<li><p><strong>record_log</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to record and print logs for iteration progress.
+Default is True.</p></li>
 <li><p><strong>args</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Additional arguments to pass to the state transition function ‘M’.
 Default is (None,).</p></li>
 </ul>
@@ -663,15 +789,35 @@ Default is (None,).</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>x_optimal</strong> (<em>torch.Tensor</em>) – The optimal state estimate obtained using the 4D-Var assimilation.</p></li>
-<li><p><strong>intermediate_results</strong> (<em>dict[str, list]</em>) – A dictionary containing intermediate results during optimization.
-- ‘Jb’:
-List of background cost function values at each iteration.
-- ‘Jo’:
-List of observation cost function values at each iteration.
-- ‘J_grad_norm’:
-List of norms of the cost function gradients at each iteration.
-- ‘background_states’:
-List of background state estimates at each iteration.</p></li>
+<li><p><strong>intermediate_results</strong> (<em>dict[str, list]</em>) – A dictionary containing intermediate results during optimization.</p>
+<ul>
+<li><dl class="simple">
+<dt>’Jb’</dt><dd><p>List of background cost function values at each iteration.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’Jo’</dt><dd><p>List of observation cost function values at each iteration.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’J’</dt><dd><p>List of cost function values at each iteration.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’J_grad_norm’</dt><dd><p>List of norms of the cost function gradients at each iteration.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>’background_states’</dt><dd><p>List of background state estimates at each iteration.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</li>
 </ul>
 </p>
 </dd>
