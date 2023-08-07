@@ -99,14 +99,11 @@ class CaseBuilder:
     set_record_log(record_log: bool) -> CaseBuilder:
         Set whether to record and print log messages during execution.
 
-    execute() -> dict[str, torch.Tensor]:
+    execute() -> dict[str, torch.Tensor | dict[str, list]]:
         Execute the data assimilation case and return the results.
 
-    get_results_dict() -> dict[str, torch.Tensor]:
+    get_results_dict() -> dict[str, torch.Tensor | dict[str, list]]:
         Get the dictionary containing the results of the executed case.
-
-    get_result(name: str) -> torch.Tensor:
-        Get a specific result from the executed case by name.
 
     get_parameters_dict() -> dict[str, Any]:
         Get the dictionary of configured parameters for the case.
@@ -348,13 +345,36 @@ class CaseBuilder:
         self.__parameters.record_log = record_log
         return self
 
-    def execute(self) -> dict[str, torch.Tensor]:
+    def execute(self) -> dict[str, torch.Tensor | dict[str, list]]:
         return self.__executor.set_input_parameters(self.__parameters).run()
 
-    def get_results_dict(self) -> dict[str, torch.Tensor]:
+    def get_results_dict(self) -> dict[str, torch.Tensor | dict[str, list]]:
         return self.__executor.get_results_dict()
 
-    def get_result(self, name: str) -> torch.Tensor:
+    def get_result(self, name: str) -> torch.Tensor | dict[str, list]:
+        r"""
+        Get a specific result from the executed case by name.
+
+        Parameters
+        ----------
+        name : str
+            The name of the result to retrieve.
+            - 'average_ensemble_all_states':
+            Only available when algorithm is ``Algorithms.EnKF``.
+            - 'each_ensemble_all_states':
+            Only available when algorithm is ``Algorithms.EnKF``.
+            - 'assimilated_background_state':
+            Only available when algorithm is ``Algorithms.Var3D``
+            or ``Algorithms.Var4D``.
+            - 'intermediate_results':
+            Only available when algorithm is ``Algorithms.Var3D``
+            or ``Algorithms.Var4D``.
+
+        Returns
+        -------
+        torch.Tensor | dict[str, list]
+            A requested result.
+        """
         return self.__executor.get_result(name)
 
     def get_parameters_dict(self) -> dict[str, Any]:

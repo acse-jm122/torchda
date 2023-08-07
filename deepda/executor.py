@@ -168,7 +168,7 @@ class _Executor:
             )
 
     def run(self) -> dict[str, torch.Tensor | dict[str, list]]:
-        """
+        r"""
         Run the selected data assimilation algorithm and return results.
 
         Returns
@@ -176,6 +176,16 @@ class _Executor:
         dict[str, torch.Tensor | dict[str, list]]
             A dictionary containing the results of the
             data assimilation algorithm.
+            - 'average_ensemble_all_states':
+            Only available when algorithm is ``Algorithms.EnKF``.
+            - 'each_ensemble_all_states':
+            Only available when algorithm is ``Algorithms.EnKF``.
+            - 'assimilated_background_state':
+            Only available when algorithm is ``Algorithms.Var3D``
+            or ``Algorithms.Var4D``.
+            - 'intermediate_results':
+            Only available when algorithm is ``Algorithms.Var3D``
+            or ``Algorithms.Var4D``.
         """
         self.__setup_device()
         if self.__parameters is None:
@@ -209,22 +219,32 @@ class _Executor:
             )
         return deepcopy(self.__results)
 
-    def get_results_dict(self) -> dict[str, torch.Tensor]:
-        """
+    def get_results_dict(self) -> dict[str, torch.Tensor | dict[str, list]]:
+        r"""
         Get a deep copy of the results dictionary.
 
         Returns
         -------
-        dict[str, torch.Tensor]
+        dict[str, torch.Tensor | dict[str, list]]
             A deep copy of the results dictionary containing
             data assimilation results.
+            - 'average_ensemble_all_states':
+            Only available when algorithm is ``Algorithms.EnKF``.
+            - 'each_ensemble_all_states':
+            Only available when algorithm is ``Algorithms.EnKF``.
+            - 'assimilated_background_state':
+            Only available when algorithm is ``Algorithms.Var3D``
+            or ``Algorithms.Var4D``.
+            - 'intermediate_results':
+            Only available when algorithm is ``Algorithms.Var3D``
+            or ``Algorithms.Var4D``.
         """
         if self.__results:
             return deepcopy(self.__results)
         raise RuntimeError("No execution of the current case.")
 
-    def get_result(self, name: str) -> torch.Tensor:
-        """
+    def get_result(self, name: str) -> torch.Tensor | dict[str, list]:
+        r"""
         Get a deep copy of a specific result by name
         from the results dictionary.
 
@@ -232,10 +252,20 @@ class _Executor:
         ----------
         name : str
             The name of the result to retrieve.
+            - 'average_ensemble_all_states':
+            Only available when algorithm is `Algorithms.EnKF`.
+            - 'each_ensemble_all_states':
+            Only available when algorithm is `Algorithms.EnKF`.
+            - 'assimilated_background_state':
+            Only available when algorithm is `Algorithms.Var3D`
+            or `Algorithms.Var4D`.
+            - 'intermediate_results':
+            Only available when algorithm is `Algorithms.Var3D`
+            or `Algorithms.Var4D`.
 
         Returns
         -------
-        torch.Tensor
+        torch.Tensor | dict[str, list]
             A deep copy of the requested result.
         """
         if name in self.__results:
