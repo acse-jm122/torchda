@@ -16,7 +16,6 @@ https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python
 from typing import Callable
 
 import torch
-from torch.func import jacrev
 
 from . import _GenericTensor
 
@@ -27,7 +26,7 @@ def apply_KF(
     time_obs: _GenericTensor,
     gap: int,
     M: Callable,
-    H: torch.Tensor | Callable,
+    H: torch.Tensor,
     P0: torch.Tensor,
     R: torch.Tensor,
     x0: torch.Tensor,
@@ -62,18 +61,12 @@ def apply_KF(
         to predict the state forward, and '\*args' represents
         any additional arguments required by the state transition function.
 
-    H : torch.Tensor | Callable
-        The measurement matrix or a function that
-        computes the measurement matrix. If 'H' is a torch.Tensor,
-        it is a 2D tensor of shape (measurement_dim, state_dim),
+    H : torch.Tensor
+        The measurement matrix. A 2D tensor of shape
+        (measurement_dim, state_dim),
         where 'measurement_dim' is the dimension of measurement
         and 'state_dim' is the dimension of the state vector.
         This matrix maps the state space to the measurement space.
-        If 'H' is a Callable, it should have the signature
-        H(x: torch.Tensor) -> torch.Tensor to compute the measurement,
-        and 'H' must be able to handle the input 'x' with shape
-        (state_dim,). The output of Callable 'H' must be a Tensor with shape
-        (measurement_dim,).
 
     P0 : torch.Tensor
         The initial covariance matrix of the state estimate. A 2D tensor of
@@ -109,43 +102,34 @@ def apply_KF(
     Raises
     ------
     TypeError
-        If 'M' is not a callable or 'H' is not a torch.Tensor or Callable.
+        If 'M' is not a callable or 'H' is not a torch.Tensor.
 
     Notes
     -----
     - The function assumes that the input tensors are properly shaped
-      and valid for the Kalman Filter. Ensure that 'x0', 'P0', 'R',
-      and 'y' are appropriate for the dimensions of 'M' and 'H'.
+        and valid for the Kalman Filter. Ensure that 'x0', 'P0', 'R',
+        and 'y' are appropriate for the dimensions of 'M' and 'H'.
     - The function assumes that 'time_obs' contains time points
-      that are increasing, and 'gap' specifies the number of time steps
-      between consecutive observations.
+        that are increasing, and 'gap' specifies the number of time steps
+        between consecutive observations.
     - The implementation assumes a constant P assumption,
-      meaning the state estimate covariance matrix 'P' remains the same
-      throughout the filtering process. If a time-varying 'P' is
-      required, you need to modify the function accordingly.
+        meaning the state estimate covariance matrix 'P' remains the same
+        throughout the filtering process. If a time-varying 'P' is
+        required, you need to modify the function accordingly.
     """
     if not isinstance(M, Callable):
         raise TypeError(
             "`M` must be a callable type in Kalman Filter, "
             f"but given {type(H)=}"
         )
-    if not isinstance(H, (Callable, torch.Tensor)):
+    if not isinstance(H, torch.Tensor):
         raise TypeError(
-            "`H` must be a callable type or an instance of Tensor "
-            f"in Kalman Filter, but given {type(H)=}"
-        )
-    if isinstance(H, torch.nn.Module):
-        from warnings import warn
-        warn(
-            "Jacobian calculation on Nerual Network `H` might be incorrect "
-            "for the current Kalman Filter implementation.", FutureWarning
+            "`H` must be an instance of Tensor in Kalman Filter, "
+            f"but given {type(H)=}"
         )
 
     device = x0.device
     x_estimates = torch.zeros((n_steps + 1, x0.numel()), device=device)
-
-    if isinstance(H, Callable):
-        jacobian = jacrev(H)
 
     # construct initial state
     x = x0.ravel()
@@ -163,10 +147,9 @@ def apply_KF(
 
         # update
         x = X[-1]
-        H_mat = jacobian(x) if isinstance(H, Callable) else H
-        K = (H_mat @ P0 @ H_mat.T) + R
-        w = torch.linalg.solve(K, y[iobs] - (H_mat @ x))
-        x = x + (P0 @ H_mat.T @ w)
+        K = (H @ P0 @ H.T) + R
+        w = torch.linalg.solve(K, y[iobs] - (H @ x))
+        x = x + (P0 @ H.T @ w)
 
         # store estimates
         x_estimates[istart:istop] = X
@@ -232,10 +215,9 @@ def apply_EnKF(
         and 'state_dim' is the dimension of the state vector.
         This matrix maps the state space to the measurement space.
         If 'H' is a Callable, it should have the signature
-        H(x: torch.Tensor) -> torch.Tensor to compute the measurement,
+        H(x: torch.Tensor) -> torch.Tensor and compute the measurement matrix,
         and 'H' must be able to handle the input 'x' with shape
-        (number of ensemble, state_dim). The output of Callable 'H'
-        must be a Tensor with shape (number of ensemble, measurement_dim).
+        (number of ensemble, state_dim).
 
     P0 : torch.Tensor
         The initial covariance matrix of the state estimate. A 2D tensor of
@@ -350,7 +332,6 @@ def apply_EnKF(
                 + R
             )
             Pxz = ONE_OVER_NE_MINUS_ONE * ((X - X_mean).T @ Xh_minus_z_mean)
-            # Update
             X = X + (observations - Xh) @ torch.linalg.solve(Pzz, Pxz.T)
         else:  # isinstance(H, torch.Tensor)
             X_minus_X_mean = X - X_mean
