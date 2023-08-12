@@ -16,7 +16,7 @@ https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python
 from typing import Callable
 
 import torch
-from torch.func import jacrev
+from torch.func import jacfwd, jacrev
 
 from . import _GenericTensor
 
@@ -141,10 +141,11 @@ def apply_KF(
         )
 
     device = x0.device
-    x_estimates = torch.zeros((int(sum(gaps)) + 1, x0.numel()), device=device)
+    x_dim = x0.numel()
+    x_estimates = torch.zeros((int(sum(gaps)) + 1, x_dim), device=device)
 
     if isinstance(H, Callable):
-        jacobian = jacrev(H)
+        jacobian = jacrev(H) if x0.numel() >= y[0].numel() else jacfwd(H)
 
     # construct initial state
     x = x0.ravel()
