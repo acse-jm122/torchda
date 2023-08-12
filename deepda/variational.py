@@ -146,7 +146,7 @@ def apply_3DVar(
 
 def apply_4DVar(
     time_obs: _GenericTensor,
-    gap: int,
+    gaps: _GenericTensor,
     M: Callable,
     H: Callable,
     B: torch.Tensor,
@@ -171,8 +171,9 @@ def apply_4DVar(
     time_obs : _GenericTensor
         A 1D array containing the observation times in increasing order.
 
-    gap : int
-        The number of time steps between consecutive observations.
+    gaps : _GenericTensor
+        A 1D array containing the number of time steps
+        between consecutive observations.
 
     M : Callable
         The state transition function (process model) that predicts the state
@@ -299,7 +300,9 @@ def apply_4DVar(
         ) + y_minus_H_x0 @ torch.linalg.solve(R, y_minus_H_x0)
         x = new_x0
         loss_Jo = 0
-        for iobs, time_ibos in enumerate(time_obs[1:], start=1):
+        for iobs, (time_ibos, gap) in enumerate(
+            zip(time_obs[1:], gaps), start=1
+        ):
             time_fw = torch.linspace(
                 current_time, time_ibos, gap + 1, device=device
             )

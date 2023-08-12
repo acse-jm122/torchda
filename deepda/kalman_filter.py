@@ -23,9 +23,8 @@ from . import _GenericTensor
 
 @torch.no_grad()
 def apply_KF(
-    n_steps: int,
     time_obs: _GenericTensor,
-    gap: int,
+    gaps: _GenericTensor,
     M: Callable,
     H: torch.Tensor | Callable,
     P0: torch.Tensor,
@@ -44,14 +43,12 @@ def apply_KF(
 
     Parameters
     ----------
-    n_steps : int
-        The number of time steps to propagate the state forward.
-
     time_obs : _GenericTensor
         A 1D array containing the observation times in increasing order.
 
-    gap : int
-        The number of time steps between consecutive observations.
+    gaps : _GenericTensor
+        A 1D array containing the number of time steps
+        between consecutive observations.
 
     M : Callable
         The state transition function (process model) that predicts the state
@@ -117,7 +114,7 @@ def apply_KF(
       and valid for the Kalman Filter. Ensure that 'x0', 'P0', 'R',
       and 'y' are appropriate for the dimensions of 'M' and 'H'.
     - The function assumes that 'time_obs' contains time points
-      that are increasing, and 'gap' specifies the number of time steps
+      that are increasing, and 'gaps' specifies each number of time steps
       between consecutive observations.
     - The implementation assumes a constant P assumption,
       meaning the state estimate covariance matrix 'P' remains the same
@@ -136,13 +133,15 @@ def apply_KF(
         )
     if isinstance(H, torch.nn.Module):
         from warnings import warn
+
         warn(
             "Jacobian calculation on Nerual Network `H` might be incorrect "
-            "for the current Kalman Filter implementation.", FutureWarning
+            "for the current Kalman Filter implementation.",
+            FutureWarning,
         )
 
     device = x0.device
-    x_estimates = torch.zeros((n_steps + 1, x0.numel()), device=device)
+    x_estimates = torch.zeros((int(sum(gaps)) + 1, x0.numel()), device=device)
 
     if isinstance(H, Callable):
         jacobian = jacrev(H)
@@ -151,7 +150,7 @@ def apply_KF(
     x = x0.ravel()
 
     current_time = start_time
-    for iobs, time_obs_iobs in enumerate(time_obs):
+    for iobs, (time_obs_iobs, gap) in enumerate(zip(time_obs, gaps)):
         istart = iobs * gap
         istop = istart + gap + 1
 
@@ -177,9 +176,8 @@ def apply_KF(
 
 @torch.no_grad()
 def apply_EnKF(
-    n_steps: int,
     time_obs: _GenericTensor,
-    gap: int,
+    gaps: _GenericTensor,
     Ne: int,
     M: Callable,
     H: torch.Tensor | Callable,
@@ -203,14 +201,12 @@ def apply_EnKF(
 
     Parameters
     ----------
-    n_steps : int
-        The number of time steps to propagate the state forward.
-
     time_obs : _GenericTensor
         A 1D array containing the observation times in increasing order.
 
-    gap : int
-        The number of time steps between consecutive observations.
+    gaps : _GenericTensor
+        A 1D array containing the number of time steps
+        between consecutive observations.
 
     Ne : int
         The number of ensemble members representing the state estimates.
@@ -285,7 +281,7 @@ def apply_EnKF(
       and valid for the Ensemble Kalman Filter. Ensure that 'x0', 'P0', 'R',
       and 'y' are appropriate for the dimensions of 'M' and 'H'.
     - The function assumes that 'time_obs' contains time points
-      that are increasing, and 'gap' specifies the number of time steps
+      that are increasing, and 'gaps' specifies each number of time steps
       between consecutive observations.
     - The implementation uses an ensemble of state estimates to represent
       the uncertainty in the estimated state. The ensemble Kalman filter
@@ -304,6 +300,7 @@ def apply_EnKF(
 
     device = x0.device
     x_dim = x0.numel()
+    n_steps = int(sum(gaps))
     x_ave = torch.zeros((n_steps + 1, x_dim), device=device)
     x_ens = torch.zeros((n_steps + 1, Ne, x_dim), device=device)
 
@@ -319,11 +316,10 @@ def apply_EnKF(
     ONE_OVER_NE_MINUS_ONE = 1.0 / (Ne - 1.0)
 
     current_time = start_time
-    running_mean = torch.empty((gap + 1, x_dim), device=device)
-    for iobs, time_obs_iobs in enumerate(time_obs):
+    for iobs, (time_obs_iobs, gap) in enumerate(zip(time_obs, gaps)):
         istart = iobs * gap
         istop = istart + gap + 1
-        running_mean.zero_()
+        running_mean = torch.zeros((gap + 1, x_dim), device=device)
         time_fw = torch.linspace(
             current_time, time_obs_iobs, gap + 1, device=device
         )

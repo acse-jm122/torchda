@@ -44,9 +44,13 @@ class _Executor:
         return self
 
     def __check_EnKF_parameters(self) -> None:
-        assert self.__parameters.num_steps > 0
         assert self.__parameters.output_sequence_length > 0
-        assert len(self.__parameters.observation_time_steps) >= 1
+        assert (
+            len_observation_time_steps := len(
+                self.__parameters.observation_time_steps
+            )
+        ) >= 1
+        assert len(self.__parameters.gaps) == len_observation_time_steps
         assert self.__parameters.num_ensembles > 1
 
     def __check_3DVar_parameters(self) -> None:
@@ -56,7 +60,12 @@ class _Executor:
     def __check_4DVar_parameters(self) -> None:
         self.__check_3DVar_parameters()
         assert self.__parameters.output_sequence_length > 0
-        assert len(self.__parameters.observation_time_steps) >= 2
+        assert (
+            len_observation_time_steps := len(
+                self.__parameters.observation_time_steps
+            )
+        ) >= 2
+        assert len(self.__parameters.gaps) == (len_observation_time_steps - 1)
 
     def __call_apply_EnKF(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
@@ -70,9 +79,8 @@ class _Executor:
                 individual ensemble state estimates.
         """
         return apply_EnKF(
-            self.__parameters.num_steps,
             self.__parameters.observation_time_steps,
-            self.__parameters.gap,
+            self.__parameters.gaps,
             self.__parameters.num_ensembles,
             self.__parameters.forward_model,
             self.__parameters.observation_model,
@@ -119,7 +127,7 @@ class _Executor:
         """
         return apply_4DVar(
             self.__parameters.observation_time_steps,
-            self.__parameters.gap,
+            self.__parameters.gaps,
             self.__parameters.forward_model,
             self.__parameters.observation_model,
             self.__parameters.background_covariance_matrix,

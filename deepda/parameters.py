@@ -54,12 +54,9 @@ class Parameters:
     observation_time_steps : _GenericTensor, optional
         A 1D array containing the observation times in increasing order.
 
-    gap : int, optional
-        The number of time steps between consecutive observations.
-
-    num_steps : int, optional
-        The number of time steps to propagate the state forward.
-        Required for EnKF and 4D-Var.
+    gaps : _GenericTensor, optional
+        A 1D array containing the number of time steps
+        between consecutive observations.
 
     num_ensembles : int, optional
         The number of ensembles used in the
@@ -87,7 +84,7 @@ class Parameters:
     - Ensure that the provided tensors are properly shaped and compatible with
       the algorithm's requirements.
     - For EnKF, 'forward_model' should be provided,
-      and 'num_steps' should be > 0.
+      and 'len(observation_time_steps)' should be > 0.
     - For 3D-Var and 4D-Var, 'max_iterations' and 'learning_rate' control the
       optimization process.
     - For 4D-Var, 'observation_time_steps' should have at least 2 time points.
@@ -103,8 +100,7 @@ class Parameters:
     forward_model: Optional[Callable] = None
     output_sequence_length: Optional[int] = 1
     observation_time_steps: Optional[_GenericTensor] = None
-    gap: Optional[int] = 0
-    num_steps: Optional[int] = 0
+    gaps: Optional[_GenericTensor] = None
     num_ensembles: Optional[int] = 0
     start_time: Optional[int | float] = 0.0
     max_iterations: Optional[int] = 1000

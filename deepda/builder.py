@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Any, Callable
 
 import torch
-from numpy import ndarray
 from numpy.linalg import LinAlgError
 
 from . import Algorithms, Device, _GenericTensor
@@ -78,11 +77,8 @@ class CaseBuilder:
         -> CaseBuilder:
         Set the observation time steps.
 
-    set_gap(gap: int) -> CaseBuilder:
-        Set the number of time steps between observations.
-
-    set_num_steps(num_steps: int) -> CaseBuilder:
-        Set the number of time steps to propagate the state forward.
+    set_gaps(gaps: _GenericTensor) -> CaseBuilder:
+        Set the number sequence of time steps between observations.
 
     set_num_ensembles(num_ensembles: int) -> CaseBuilder:
         Set the number of ensembles for EnKF.
@@ -276,9 +272,7 @@ class CaseBuilder:
     def set_observation_time_steps(
         self, observation_time_steps: _GenericTensor
     ) -> "CaseBuilder":
-        if not isinstance(
-            observation_time_steps, (list, tuple, ndarray, torch.Tensor)
-        ):
+        if not isinstance(observation_time_steps, _GenericTensor.__bound__):
             raise TypeError(
                 "observation_time_steps must be a "
                 f"{_GenericTensor.__bound__} type, "
@@ -291,18 +285,13 @@ class CaseBuilder:
         )
         return self
 
-    def set_gap(self, gap: int) -> "CaseBuilder":
-        if not isinstance(gap, int):
-            raise TypeError(f"gap must be an integer, given {type(gap)=}")
-        self.__parameters.gap = gap
-        return self
-
-    def set_num_steps(self, num_steps: int) -> "CaseBuilder":
-        if not isinstance(num_steps, int):
+    def set_gaps(self, gaps: _GenericTensor) -> "CaseBuilder":
+        if not isinstance(gaps, _GenericTensor.__bound__):
             raise TypeError(
-                f"num_steps must be an integer, given {type(num_steps)=}"
+                f"gaps must be a {_GenericTensor.__bound__} type, "
+                f"given {type(gaps)=}"
             )
-        self.__parameters.num_steps = num_steps
+        self.__parameters.gaps = gaps
         return self
 
     def set_num_ensembles(self, num_ensembles: int) -> "CaseBuilder":
