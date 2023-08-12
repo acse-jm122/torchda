@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from datetime import datetime
 from typing import Any, Callable
 
 import torch
@@ -11,7 +12,7 @@ from .parameters import Parameters
 
 
 class CaseBuilder:
-    """
+    r"""
     A builder class for configuring and executing
     data assimilation cases.
 
@@ -23,6 +24,7 @@ class CaseBuilder:
     ----------
     case_name : str, optional
         A name for the data assimilation case.
+        Default is 'case_{current_timestamp}'.
 
     parameters : dict[str, Any] | Parameters, optional
         A dictionary or an instance of Parameters class containing
@@ -51,6 +53,9 @@ class CaseBuilder:
     set_forward_model(forward_model: Callable) -> CaseBuilder:
         Set the state transition function 'M' for EnKF.
 
+    set_output_sequence_length(output_sequence_length: int)-> "CaseBuilder":
+        Set the output sequence length for the forward model.
+
     set_observation_model(observation_model: torch.Tensor | Callable)
         -> CaseBuilder:
         Set the observation model or matrix 'H' for EnKF.
@@ -66,8 +71,7 @@ class CaseBuilder:
     set_background_state(background_state: torch.Tensor) -> CaseBuilder:
         Set the initial background state estimate 'xb'.
 
-    set_observations(observations: torch.Tensor |
-        tuple[torch.Tensor] | list[torch.Tensor]) -> CaseBuilder:
+    set_observations(observations: torch.Tensor) -> CaseBuilder:
         Set the observed measurements.
 
     set_observation_time_steps(observation_time_steps: _GenericTensor)
@@ -111,10 +115,13 @@ class CaseBuilder:
 
     def __init__(
         self,
-        case_name: str = "",
+        case_name: str = None,
         parameters: dict[str, Any] | Parameters = None,
     ) -> None:
-        self.case_name = case_name
+        if case_name is None:
+            self.case_name = datetime.now().strftime(
+                "case_%Y-%m-%dT%H-%M-%S.%f"
+            )
         self.__parameters = Parameters()
         if parameters is not None:
             self.set_parameters(parameters)
@@ -160,6 +167,17 @@ class CaseBuilder:
                 f"given {type(forward_model)=}"
             )
         self.__parameters.forward_model = forward_model
+        return self
+
+    def set_output_sequence_length(
+        self, output_sequence_length: int
+    ) -> "CaseBuilder":
+        if not isinstance(output_sequence_length, Callable):
+            raise TypeError(
+                "output_sequence_length must be an integer, "
+                f"given {type(output_sequence_length)=}"
+            )
+        self.__parameters.output_sequence_length = output_sequence_length
         return self
 
     def set_observation_model(
@@ -246,21 +264,13 @@ class CaseBuilder:
         self.__parameters.background_state = background_state.detach().clone()
         return self
 
-    def set_observations(
-        self,
-        observations: torch.Tensor | tuple[torch.Tensor] | list[torch.Tensor],
-    ) -> "CaseBuilder":
-        if not isinstance(observations, (torch.Tensor, tuple, list)):
+    def set_observations(self, observations: torch.Tensor) -> "CaseBuilder":
+        if not isinstance(observations, torch.Tensor):
             raise TypeError(
-                "observations must be an instance of Tensor "
-                f"or a tuple or list of Tensor, given {type(observations)=}"
+                "observations must be an instance of Tensor, "
+                f"given {type(observations)=}"
             )
-        if isinstance(observations, (tuple, list)):
-            for i, sample_iobs in enumerate(observations):
-                observations[i] = sample_iobs.detach().clone()
-        else:  # isinstance(observations, torch.Tensor)
-            observations = observations.detach().clone()
-        self.__parameters.observations = observations
+        self.__parameters.observations = observations.detach().clone()
         return self
 
     def set_observation_time_steps(

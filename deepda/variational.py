@@ -44,11 +44,11 @@ def apply_3DVar(
 
     xb : torch.Tensor
         The background state estimate. A 1D or 2D tensor of shape
-        (state_dim,) or (sequence_length, state_dim).
+        (state_dim,) or (batch_size, state_dim).
 
     y : torch.Tensor
         The observed measurements. A 1D or 2D tensor of shape
-        (observation_dim,) or (sequence_length, observation_dim).
+        (observation_dim,) or (batch_size, observation_dim).
 
     max_iterations : int, optional
         The maximum number of optimization iterations. Default is 1000.
@@ -97,7 +97,7 @@ def apply_3DVar(
         )
     if record_log:
         # Set up logging with a timestamp in the log file name
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S.%f")
+        timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S.%f")
         logger = logging.getLogger(timestamp)
         logger.addHandler(
             logging.FileHandler(f"3dvar_data_assimilation_{timestamp}.log")
@@ -117,11 +117,11 @@ def apply_3DVar(
     }
 
     optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
-    sequence_length = xb_inner.size(0)
+    batch_size = xb_inner.size(0)
     for n in range(max_iterations):
         optimizer.zero_grad(set_to_none=True)
         loss_J = 0
-        for i in range(sequence_length):
+        for i in range(batch_size):
             one_x0 = new_x0[i].ravel()
             x0_minus_xb = one_x0 - xb_inner[i].ravel()
             y_minus_H_x0 = y_inner[i].ravel() - H(one_x0).ravel()
@@ -152,7 +152,7 @@ def apply_4DVar(
     B: torch.Tensor,
     R: torch.Tensor,
     xb: torch.Tensor,
-    y: tuple[torch.Tensor] | list[torch.Tensor],
+    y: torch.Tensor,
     max_iterations: int = 1000,
     learning_rate: float = 1e-3,
     record_log: bool = True,
@@ -201,9 +201,10 @@ def apply_4DVar(
     xb : torch.Tensor
         The background state estimate. A 1D tensor of shape (state_dim).
 
-    y : tuple[torch.Tensor] | list[torch.Tensor]
-        A tuple or list of observed measurements. Each element is a 1D tensor
-        representing the measurements at a specific observation time.
+    y : torch.Tensor
+        The observed measurements. A 2D tensor of shape
+        (number of observations, measurement_dim).
+        Each row represents a measurement at a specific time step.
 
     max_iterations : int, optional
         The maximum number of optimization iterations. Default is 1000.
@@ -265,14 +266,9 @@ def apply_4DVar(
         raise TypeError(
             f"`H` must be a callable type in 4DVar, but given {type(H)=}"
         )
-    if not isinstance(y, (tuple, list)):
-        raise TypeError(
-            "`y` must be a tuple or list of Tensor in 4DVar, "
-            f"but given {type(y)=}"
-        )
     if record_log:
         # Set up logger with a timestamp in the log file name
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S.%f")
+        timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S.%f")
         logger = logging.getLogger(timestamp)
         logger.addHandler(
             logging.FileHandler(f"4dvar_data_assimilation_{timestamp}.log")
@@ -307,13 +303,11 @@ def apply_4DVar(
             time_fw = torch.linspace(
                 current_time, time_ibos, gap + 1, device=device
             )
-            x = M(x, time_fw, *args)
-            for i in range(x.size(0)):  # sequence_length
-                # loss_Jo += Jo(x[i], y[iobs][i])
-                y_minus_H_xp = y[iobs][i].ravel() - H(x[i].ravel()).ravel()
-                loss_Jo += y_minus_H_xp @ torch.linalg.solve(R, y_minus_H_xp)
+            x = M(x, time_fw, *args)[-1]
+            # loss_Jo += Jo(x, y[iobs])
+            y_minus_H_xp = y[iobs].ravel() - H(x.ravel()).ravel()
+            loss_Jo += y_minus_H_xp @ torch.linalg.solve(R, y_minus_H_xp)
             current_time = time_ibos
-            x = x[-1]
         loss_J = loss_Jb + loss_Jo
         loss_J.backward(retain_graph=True)
         loss_Jb, loss_Jo = loss_Jb.item(), loss_Jo.item()

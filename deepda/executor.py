@@ -45,6 +45,7 @@ class _Executor:
 
     def __check_EnKF_parameters(self) -> None:
         assert self.__parameters.num_steps > 0
+        assert self.__parameters.output_sequence_length > 0
         assert len(self.__parameters.observation_time_steps) >= 1
         assert self.__parameters.num_ensembles > 1
 
@@ -54,9 +55,7 @@ class _Executor:
 
     def __check_4DVar_parameters(self) -> None:
         self.__check_3DVar_parameters()
-        assert isinstance(
-            self.__parameters.observations, (tuple, list)
-        ), "observations must be a tuple or list of Tensor in 4DVar"
+        assert self.__parameters.output_sequence_length > 0
         assert len(self.__parameters.observation_time_steps) >= 2
 
     def __call_apply_EnKF(self) -> tuple[torch.Tensor, torch.Tensor]:
@@ -153,19 +152,51 @@ class _Executor:
         self.__parameters.background_state = (
             self.__parameters.background_state.to(device=device)
         )
-        observations = self.__parameters.observations
-        if isinstance(observations, (tuple, list)):
-            for i, sample_iobs in enumerate(observations):
-                observations[i] = sample_iobs.to(device=device)
-        else:  # isinstance(observations, torch.Tensor)
-            observations = observations.to(device=device)
-        self.__parameters.observations = observations
+        self.__parameters.observations = self.__parameters.observations.to(
+            device=device
+        )
         if (
             observation_model := self.__parameters.observation_model
         ) is not None and isinstance(observation_model, torch.Tensor):
             self.__parameters.observation_model = observation_model.to(
                 device=device
             )
+
+    def __wrap_forward_model(self) -> None:
+        r"""
+        Wrap the forward model with additional functionality if necessary.
+
+        If the provided forward model is an instance of ``torch.nn.Module``,
+        this method wraps it with a new function that handles the output
+        sequence length for the state propagation.
+
+        This is required to ensure compatibility with the data assimilation
+        algorithms, particularly when the output sequence length is greater
+        than 1.
+
+        The wrapped forward model function is stored back to
+        the ``forward_model`` attribute of the parameters object.
+        """
+        if isinstance(self.__parameters.forward_model, torch.nn.Module):
+            forward_model = self.__parameters.forward_model
+
+            def forward_model_wrapper(
+                xb: torch.Tensor, time_fw: torch.Tensor, *args
+            ):
+                outs = [x0.view(1, -1) if (x0 := xb).ndim == 1 else xb]
+                x = outs[0]
+                forward_times, residue = divmod(
+                    len(time_fw[:-1]),
+                    self.__parameters.output_sequence_length
+                )
+                for _ in range(forward_times + 1):
+                    x = forward_model(x, *args)
+                    outs.append(x)
+                    x = x[-1]
+                outs[-1] = outs[-1][:residue]
+                return torch.cat(outs)
+
+            self.__parameters.forward_model = forward_model_wrapper
 
     def run(self) -> dict[str, torch.Tensor | dict[str, list]]:
         r"""
@@ -192,6 +223,7 @@ class _Executor:
                 or ``Algorithms.Var4D``.
         """
         self.__setup_device()
+        self.__wrap_forward_model()
         if self.__parameters is None:
             raise RuntimeError("Set up input parameters before run.")
         algorithm = self.__parameters.algorithm
