@@ -99,7 +99,7 @@ def apply_KF(
 
     Returns
     -------
-    x_estimates : A 2D tensor of shape (n_steps + 1, state_dim).
+    x_estimates : A 2D tensor of shape (num_steps + 1, state_dim).
         Each row represents the estimated state vector
         at a specific time step, including the initial state.
 
@@ -261,12 +261,12 @@ def apply_EnKF(
     Returns
     -------
     x_ave : torch.Tensor
-        A 2D tensor of shape (n_steps + 1, state_dim). Each row represents
+        A 2D tensor of shape (num_steps + 1, state_dim). Each row represents
         the ensemble mean state vector at a specific time step, including
         the initial state.
 
     x_ens : torch.Tensor
-        A 3D tensor of shape (n_steps + 1, Ne, state_dim). Each slice along
+        A 3D tensor of shape (num_steps + 1, Ne, state_dim). Each slice along
         the second dimension represents an ensemble member's state estimates
         at a specific time step, including the initial state.
 
@@ -300,9 +300,9 @@ def apply_EnKF(
 
     device = x0.device
     x_dim = x0.numel()
-    n_steps = int(sum(gaps))
-    x_ave = torch.zeros((n_steps + 1, x_dim), device=device)
-    x_ens = torch.zeros((n_steps + 1, Ne, x_dim), device=device)
+    num_steps = int(sum(gaps))
+    x_ave = torch.zeros((num_steps + 1, x_dim), device=device)
+    x_ens = torch.zeros((num_steps + 1, Ne, x_dim), device=device)
 
     # construct initial ensemble
     X = (
