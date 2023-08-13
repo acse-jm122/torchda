@@ -19,10 +19,16 @@ class _Executor:
     Warning
     -------
     There is no validation for input parameters in this class.
+
+    Parameters
+    ----------
+    parameters : Parameters, optional
+        An instance of Parameters class containing
+        configuration parameters for the data assimilation case.
     """
 
-    def __init__(self) -> None:
-        self.__parameters = None
+    def __init__(self, parameters: Parameters = None) -> None:
+        self.__parameters = parameters
         self.__results = {}
 
     def set_input_parameters(self, parameters: Parameters) -> "_Executor":
