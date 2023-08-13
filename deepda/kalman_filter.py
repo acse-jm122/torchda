@@ -31,8 +31,8 @@ def apply_KF(
     R: torch.Tensor,
     x0: torch.Tensor,
     y: torch.Tensor,
+    *args,
     start_time: float = 0.0,
-    args: tuple = (None,),
 ) -> torch.Tensor:
     r"""
     Implementation of the Kalman Filter (constant P assumption).
@@ -71,6 +71,8 @@ def apply_KF(
         and 'H' must be able to handle the input 'x' with shape
         (state_dim,). The output of Callable 'H' must be a Tensor with shape
         (measurement_dim,).
+        Note: Jacobian calculation on Neural Network 'H' might be incorrect
+        for the current Kalman Filter implementation.
 
     P0 : torch.Tensor
         The initial covariance matrix of the state estimate. A 2D tensor of
@@ -90,12 +92,11 @@ def apply_KF(
         (number of observations, measurement_dim).
         Each row represents a measurement at a specific time step.
 
-    start_time : float, optional
-        The starting time of the filtering process. Default is 0.0.
-
     args : tuple, optional
         Additional arguments to pass to the state transition function 'M'.
-        Default is (None,).
+
+    start_time : float, optional
+        The starting time of the filtering process. Default is 0.0.
 
     Returns
     -------
@@ -106,7 +107,7 @@ def apply_KF(
     Raises
     ------
     TypeError
-        If 'M' is not a callable or 'H' is not a torch.Tensor or Callable.
+        If 'M' is not a Callable or 'H' is not a torch.Tensor or Callable.
 
     Notes
     -----
@@ -123,12 +124,12 @@ def apply_KF(
     """
     if not isinstance(M, Callable):
         raise TypeError(
-            "`M` must be a callable type in Kalman Filter, "
+            "`M` must be a Callable in Kalman Filter, "
             f"but given {type(H)=}"
         )
     if not isinstance(H, (Callable, torch.Tensor)):
         raise TypeError(
-            "`H` must be a callable type or an instance of Tensor "
+            "`H` must be a Callable or an instance of Tensor "
             f"in Kalman Filter, but given {type(H)=}"
         )
     if isinstance(H, torch.nn.Module):
@@ -186,8 +187,8 @@ def apply_EnKF(
     R: torch.Tensor,
     x0: torch.Tensor,
     y: torch.Tensor,
+    *args,
     start_time: float = 0.0,
-    args: tuple = (None,),
 ) -> tuple[torch.Tensor, torch.Tensor]:
     r"""
     Implementation of the Ensemble Kalman Filter
@@ -252,12 +253,11 @@ def apply_EnKF(
         (number of observations, measurement_dim). Each row represents
         a measurement at a specific time step.
 
-    start_time : float, optional
-        The starting time of the filtering process. Default is 0.0.
-
     args : tuple, optional
         Additional arguments to pass to the state transition function 'M'.
-        Default is (None,).
+
+    start_time : float, optional
+        The starting time of the filtering process. Default is 0.0.
 
     Returns
     -------
@@ -274,7 +274,7 @@ def apply_EnKF(
     Raises
     ------
     TypeError
-        If 'M' is not a callable or 'H' is not a torch.Tensor or Callable.
+        If 'M' is not a Callable or 'H' is not a torch.Tensor or Callable.
 
     Notes
     -----
@@ -290,12 +290,12 @@ def apply_EnKF(
     """
     if not isinstance(M, Callable):
         raise TypeError(
-            "`M` must be a callable type in Ensemble Kalman Filter, "
+            "`M` must be a Callable in Ensemble Kalman Filter, "
             f"but given {type(H)=}"
         )
     if not isinstance(H, (Callable, torch.Tensor)):
         raise TypeError(
-            "`H` must be a callable type or an instance of Tensor "
+            "`H` must be a Callable or an instance of Tensor "
             f"in Ensemble Kalman Filter, but given {type(H)=}"
         )
 

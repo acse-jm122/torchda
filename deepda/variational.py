@@ -80,7 +80,7 @@ def apply_3DVar(
     Raises
     ------
     TypeError
-        If 'H' is not a callable.
+        If 'H' is not a Callable.
 
     Notes
     -----
@@ -93,7 +93,7 @@ def apply_3DVar(
     """
     if not isinstance(H, Callable):
         raise TypeError(
-            f"`H` must be a callable type in 3DVar, but given {type(H)=}"
+            f"`H` must be a Callable in 3DVar, but given {type(H)=}"
         )
     if record_log:
         # Set up logging with a timestamp in the log file name
@@ -153,10 +153,10 @@ def apply_4DVar(
     R: torch.Tensor,
     xb: torch.Tensor,
     y: torch.Tensor,
+    *args,
     max_iterations: int = 1000,
     learning_rate: float = 1e-3,
     record_log: bool = True,
-    args: tuple = (None,),
 ) -> tuple[torch.Tensor, dict[str, list]]:
     r"""
     Implementation of the 4D-Var (Four-Dimensional Variational) assimilation.
@@ -207,6 +207,9 @@ def apply_4DVar(
         (number of observations, measurement_dim).
         Each row represents a measurement at a specific time step.
 
+    args : tuple, optional
+        Additional arguments to pass to the state transition function 'M'.
+
     max_iterations : int, optional
         The maximum number of optimization iterations. Default is 1000.
 
@@ -216,10 +219,6 @@ def apply_4DVar(
     record_log : bool, optional
         Whether to record and print logs for iteration progress.
         Default is True.
-
-    args : tuple, optional
-        Additional arguments to pass to the state transition function 'M'.
-        Default is (None,).
 
     Returns
     -------
@@ -247,7 +246,7 @@ def apply_4DVar(
     Raises
     ------
     TypeError
-        If 'M' or 'H' are not callable, or if 'y' is not a tuple or list.
+        If 'M' or 'H' are not Callable, or if 'y' is not a tuple or list.
 
     Notes
     -----
@@ -261,11 +260,11 @@ def apply_4DVar(
     """
     if not isinstance(M, Callable):
         raise TypeError(
-            f"`M` must be a callable type in 4DVar, but given {type(M)=}"
+            f"`M` must be a Callable in 4DVar, but given {type(M)=}"
         )
     if not isinstance(H, Callable):
         raise TypeError(
-            f"`H` must be a callable type in 4DVar, but given {type(H)=}"
+            f"`H` must be a Callable in 4DVar, but given {type(H)=}"
         )
     if record_log:
         # Set up logger with a timestamp in the log file name

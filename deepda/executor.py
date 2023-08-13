@@ -94,8 +94,8 @@ class _Executor:
             self.__parameters.observation_covariance_matrix,
             self.__parameters.background_state,
             self.__parameters.observations,
-            self.__parameters.start_time,
-            self.__parameters.args,
+            *self.__parameters.args,
+            start_time=self.__parameters.start_time,
         )
 
     def __call_apply_3DVar(self) -> tuple[torch.Tensor, dict[str, list]]:
@@ -140,10 +140,10 @@ class _Executor:
             self.__parameters.observation_covariance_matrix,
             self.__parameters.background_state,
             self.__parameters.observations,
-            self.__parameters.max_iterations,
-            self.__parameters.learning_rate,
-            self.__parameters.record_log,
-            self.__parameters.args,
+            *self.__parameters.args,
+            max_iterations=self.__parameters.max_iterations,
+            learning_rate=self.__parameters.learning_rate,
+            record_log=self.__parameters.record_log,
         )
 
     def __setup_device(self) -> None:

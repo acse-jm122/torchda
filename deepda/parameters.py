@@ -21,7 +21,7 @@ class Parameters:
 
     observation_model : torch.Tensor | Callable, optional
         The observation model or matrix 'H' that relates the state space to
-        the observation space. It can be a pre-defined tensor or a callable
+        the observation space. It can be a pre-defined tensor or a Callable
         function that computes observations from the state.
 
     background_covariance_matrix : torch.Tensor, optional
@@ -84,7 +84,7 @@ class Parameters:
     - Ensure that the provided tensors are properly shaped and compatible with
       the algorithm's requirements.
     - For EnKF, 'forward_model' should be provided,
-      and 'len(observation_time_steps)' should be > 0.
+      and 'observation_time_steps' should have at least 1 time point.
     - For 3D-Var and 4D-Var, 'max_iterations' and 'learning_rate' control the
       optimization process.
     - For 4D-Var, 'observation_time_steps' should have at least 2 time points.
@@ -106,4 +106,4 @@ class Parameters:
     max_iterations: Optional[int] = 1000
     learning_rate: Optional[int | float] = 0.001
     record_log: Optional[bool] = True
-    args: Optional[tuple] = (None,)
+    args: Optional[tuple] = ()

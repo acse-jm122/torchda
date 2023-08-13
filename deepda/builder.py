@@ -159,7 +159,7 @@ class CaseBuilder:
     def set_forward_model(self, forward_model: Callable) -> "CaseBuilder":
         if not isinstance(forward_model, Callable):
             raise TypeError(
-                "forward_model must be a callable type, "
+                "forward_model must be a Callable type, "
                 f"given {type(forward_model)=}"
             )
         self.__parameters.forward_model = forward_model
@@ -182,7 +182,7 @@ class CaseBuilder:
         if not isinstance(observation_model, (torch.Tensor | Callable)):
             raise TypeError(
                 "observation_model must be an instance of Tensor "
-                f"or a callable type, given {type(observation_model)=}"
+                f"or a Callable type, given {type(observation_model)=}"
             )
         self.__parameters.observation_model = (
             observation_model.detach().clone()
