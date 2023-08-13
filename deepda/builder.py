@@ -168,7 +168,7 @@ class CaseBuilder:
     def set_output_sequence_length(
         self, output_sequence_length: int
     ) -> "CaseBuilder":
-        if not isinstance(output_sequence_length, Callable):
+        if not isinstance(output_sequence_length, int):
             raise TypeError(
                 "output_sequence_length must be an integer, "
                 f"given {type(output_sequence_length)=}"
