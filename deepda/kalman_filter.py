@@ -25,8 +25,9 @@ from . import _GenericTensor
 def apply_KF(
     time_obs: _GenericTensor,
     gaps: _GenericTensor,
-    M: Callable,
-    H: torch.Tensor | Callable,
+    M: Callable[[torch.Tensor, _GenericTensor], torch.Tensor]
+    | Callable[..., torch.Tensor],
+    H: torch.Tensor | Callable[[torch.Tensor], torch.Tensor],
     P0: torch.Tensor,
     R: torch.Tensor,
     x0: torch.Tensor,
@@ -50,7 +51,8 @@ def apply_KF(
         A 1D array containing the number of time steps
         between consecutive observations.
 
-    M : Callable
+    M : Callable[[torch.Tensor, _GenericTensor], torch.Tensor] |
+        Callable[..., torch.Tensor]
         The state transition function (process model) that predicts the state
         of the system given the previous state and the time range.
         It should have the signature
@@ -59,7 +61,7 @@ def apply_KF(
         to predict the state forward, and '\*args' represents
         any additional arguments required by the state transition function.
 
-    H : torch.Tensor | Callable
+    H : torch.Tensor | Callable[[torch.Tensor], torch.Tensor]
         The measurement matrix or a function that
         computes the measurement matrix. If 'H' is a torch.Tensor,
         it is a 2D tensor of shape (measurement_dim, state_dim),
@@ -124,8 +126,7 @@ def apply_KF(
     """
     if not isinstance(M, Callable):
         raise TypeError(
-            "`M` must be a Callable in Kalman Filter, "
-            f"but given {type(H)=}"
+            "`M` must be a Callable in Kalman Filter, " f"but given {type(H)=}"
         )
     if not isinstance(H, (Callable, torch.Tensor)):
         raise TypeError(
@@ -181,8 +182,9 @@ def apply_EnKF(
     time_obs: _GenericTensor,
     gaps: _GenericTensor,
     Ne: int,
-    M: Callable,
-    H: torch.Tensor | Callable,
+    M: Callable[[torch.Tensor, _GenericTensor], torch.Tensor]
+    | Callable[..., torch.Tensor],
+    H: torch.Tensor | Callable[[torch.Tensor], torch.Tensor],
     P0: torch.Tensor,
     R: torch.Tensor,
     x0: torch.Tensor,
@@ -213,7 +215,8 @@ def apply_EnKF(
     Ne : int
         The number of ensemble members representing the state estimates.
 
-    M : Callable
+    M : Callable[[torch.Tensor, _GenericTensor], torch.Tensor] |
+        Callable[..., torch.Tensor]
         The state transition function (process model) that predicts the state
         of the system given the previous state and the time range. It should
         have the signature
@@ -222,7 +225,7 @@ def apply_EnKF(
         predict the state forward, and '\*args' represents any additional
         arguments required by the state transition function.
 
-    H : torch.Tensor | Callable
+    H : torch.Tensor | Callable[[torch.Tensor], torch.Tensor]
         The measurement matrix or a function that
         computes the measurement matrix. If 'H' is a torch.Tensor,
         it is a 2D tensor of shape (measurement_dim, state_dim),

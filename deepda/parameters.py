@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Callable
 
 import torch
 
@@ -19,29 +19,30 @@ class Parameters:
     algorithm : Algorithms
         The data assimilation algorithm to use (EnKF, 3D-Var, 4D-Var).
 
-    observation_model : torch.Tensor | Callable, optional
+    observation_model : torch.Tensor | Callable[[torch.Tensor], torch.Tensor]
         The observation model or matrix 'H' that relates the state space to
         the observation space. It can be a pre-defined tensor or a Callable
         function that computes observations from the state.
 
-    background_covariance_matrix : torch.Tensor, optional
+    background_covariance_matrix : torch.Tensor
         The background covariance matrix 'B' representing the uncertainty
         of the background state estimate.
 
-    observation_covariance_matrix : torch.Tensor, optional
+    observation_covariance_matrix : torch.Tensor
         The observation covariance matrix 'R' representing the uncertainty
         in the measurements.
 
-    background_state : torch.Tensor, optional
+    background_state : torch.Tensor
         The initial background state estimate 'xb'.
 
-    observations : torch.Tensor, optional
+    observations : torch.Tensor
         The observed measurements corresponding to the given observation times.
 
     device : Device, optional
         The device (CPU or GPU) to perform computations on. Default is CPU.
 
-    forward_model : Callable, optional
+    forward_model : Callable[[torch.Tensor, _GenericTensor], torch.Tensor] |
+        Callable[..., torch.Tensor], optional
         The state transition function 'M' that predicts the state of the
         system given the previous state and the time range.
         Required for EnKF and 4D-Var.
@@ -90,20 +91,24 @@ class Parameters:
     - For 4D-Var, 'observation_time_steps' should have at least 2 time points.
     """
 
-    algorithm: Algorithms = Algorithms.EnKF
-    observation_model: torch.Tensor | Callable = None
+    algorithm: Algorithms = None
+    observation_model: torch.Tensor | Callable[
+        [torch.Tensor], torch.Tensor
+    ] = None
     background_covariance_matrix: torch.Tensor = None
     observation_covariance_matrix: torch.Tensor = None
     background_state: torch.Tensor = None
     observations: torch.Tensor = None
-    device: Optional[Device] = Device.CPU
-    forward_model: Optional[Callable] = None
-    output_sequence_length: Optional[int] = 1
-    observation_time_steps: Optional[_GenericTensor] = None
-    gaps: Optional[_GenericTensor] = None
-    num_ensembles: Optional[int] = 0
-    start_time: Optional[int | float] = 0.0
-    max_iterations: Optional[int] = 1000
-    learning_rate: Optional[int | float] = 0.001
-    record_log: Optional[bool] = True
-    args: Optional[tuple] = ()
+    device: Device = Device.CPU
+    forward_model: Callable[
+        [torch.Tensor, _GenericTensor], torch.Tensor
+    ] | Callable[..., torch.Tensor] = lambda *args, **kwargs: None
+    output_sequence_length: int = 1
+    observation_time_steps: _GenericTensor = ()
+    gaps: _GenericTensor = ()
+    num_ensembles: int = 0
+    start_time: int | float = 0.0
+    max_iterations: int = 1000
+    learning_rate: int | float = 0.001
+    record_log: bool = True
+    args: tuple = ()

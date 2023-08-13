@@ -49,14 +49,15 @@ class CaseBuilder:
     set_device(device: Device) -> CaseBuilder:
         Set the device (CPU or GPU) for computations.
 
-    set_forward_model(forward_model: Callable) -> CaseBuilder:
+    set_forward_model(forward_model: Callable[[torch.Tensor, _GenericTensor],
+        torch.Tensor] | Callable[..., torch.Tensor]) -> CaseBuilder:
         Set the state transition function 'M' for EnKF.
 
     set_output_sequence_length(output_sequence_length: int)-> "CaseBuilder":
         Set the output sequence length for the forward model.
 
-    set_observation_model(observation_model: torch.Tensor | Callable)
-        -> CaseBuilder:
+    set_observation_model(observation_model: torch.Tensor |
+        Callable[[torch.Tensor], torch.Tensor]) -> CaseBuilder:
         Set the observation model or matrix 'H' for EnKF.
 
     set_background_covariance_matrix
@@ -156,7 +157,11 @@ class CaseBuilder:
             self.__parameters.device = device
         return self
 
-    def set_forward_model(self, forward_model: Callable) -> "CaseBuilder":
+    def set_forward_model(
+        self,
+        forward_model: Callable[[torch.Tensor, _GenericTensor], torch.Tensor]
+        | Callable[..., torch.Tensor],
+    ) -> "CaseBuilder":
         if not isinstance(forward_model, Callable):
             raise TypeError(
                 "forward_model must be a Callable type, "
@@ -177,9 +182,11 @@ class CaseBuilder:
         return self
 
     def set_observation_model(
-        self, observation_model: torch.Tensor | Callable
+        self,
+        observation_model: torch.Tensor
+        | Callable[[torch.Tensor], torch.Tensor],
     ) -> "CaseBuilder":
-        if not isinstance(observation_model, (torch.Tensor | Callable)):
+        if not isinstance(observation_model, (torch.Tensor, Callable)):
             raise TypeError(
                 "observation_model must be an instance of Tensor "
                 f"or a Callable type, given {type(observation_model)=}"

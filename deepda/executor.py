@@ -50,28 +50,46 @@ class _Executor:
         return self
 
     def __check_EnKF_parameters(self) -> None:
-        assert self.__parameters.output_sequence_length > 0
+        assert (
+            self.__parameters.output_sequence_length > 0
+        ), "`output_sequence_length` should be at least 1."
         assert (
             len_observation_time_steps := len(
                 self.__parameters.observation_time_steps
             )
-        ) >= 1
-        assert len(self.__parameters.gaps) == len_observation_time_steps
-        assert self.__parameters.num_ensembles > 1
+        ) >= 1, "`observation_time_steps` should be at least 1 in EnKF."
+        assert len(self.__parameters.gaps) == len_observation_time_steps, (
+            "The length of `gaps` should be equal to "
+            "the length of `observation_time_steps`."
+        )
+        assert (
+            self.__parameters.num_ensembles > 1
+        ), "`num_ensembles` should be at least 1 in EnKF."
 
     def __check_3DVar_parameters(self) -> None:
-        assert self.__parameters.max_iterations > 0
-        assert self.__parameters.learning_rate > 0
+        assert (
+            self.__parameters.max_iterations > 0
+        ), "`max_iterations` should be greater than 0."
+        assert (
+            self.__parameters.learning_rate > 0
+        ), "`learning_rate` should be greater than 0."
 
     def __check_4DVar_parameters(self) -> None:
         self.__check_3DVar_parameters()
-        assert self.__parameters.output_sequence_length > 0
+        assert (
+            self.__parameters.output_sequence_length > 0
+        ), "`output_sequence_length` should be at least 1."
         assert (
             len_observation_time_steps := len(
                 self.__parameters.observation_time_steps
             )
-        ) >= 2
-        assert len(self.__parameters.gaps) == (len_observation_time_steps - 1)
+        ) >= 2, "`observation_time_steps` should be at least 2 in 4D-Var."
+        assert len(self.__parameters.gaps) == (
+            len_observation_time_steps - 1
+        ), (
+            "The length of `gaps` should be equal to "
+            "the length of `observation_time_steps` minus 1."
+        )
 
     def __call_apply_EnKF(self) -> tuple[torch.Tensor, torch.Tensor]:
         """
@@ -171,15 +189,15 @@ class _Executor:
         )
         if isinstance(
             observation_model := self.__parameters.observation_model,
-            torch.Tensor,
+            (torch.Tensor, torch.nn.Module),
         ):
             self.__parameters.observation_model = observation_model.to(
                 device=device
             )
         # `forward_model` is optional for 3D-Var algorithm. Default is `None`.
-        if (
-            forward_model := self.__parameters.forward_model
-        ) is not None and isinstance(forward_model, torch.Tensor):
+        if isinstance(
+            forward_model := self.__parameters.forward_model, torch.nn.Module
+        ):
             self.__parameters.forward_model = forward_model.to(device=device)
 
     def __wrap_forward_model(self) -> None:

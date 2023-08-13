@@ -8,7 +8,7 @@ from . import _GenericTensor
 
 
 def apply_3DVar(
-    H: Callable,
+    H: Callable[[torch.Tensor], torch.Tensor],
     B: torch.Tensor,
     R: torch.Tensor,
     xb: torch.Tensor,
@@ -27,7 +27,7 @@ def apply_3DVar(
 
     Parameters
     ----------
-    H : Callable
+    H : Callable[[torch.Tensor], torch.Tensor]
         The observation operator that maps the state space to the observation
         space.
         It should have the signature H(x: torch.Tensor) -> torch.Tensor.
@@ -147,8 +147,9 @@ def apply_3DVar(
 def apply_4DVar(
     time_obs: _GenericTensor,
     gaps: _GenericTensor,
-    M: Callable,
-    H: Callable,
+    M: Callable[[torch.Tensor, _GenericTensor], torch.Tensor]
+    | Callable[..., torch.Tensor],
+    H: Callable[[torch.Tensor], torch.Tensor],
     B: torch.Tensor,
     R: torch.Tensor,
     xb: torch.Tensor,
@@ -175,7 +176,8 @@ def apply_4DVar(
         A 1D array containing the number of time steps
         between consecutive observations.
 
-    M : Callable
+    M : Callable[[torch.Tensor, _GenericTensor], torch.Tensor] |
+        Callable[..., torch.Tensor]
         The state transition function (process model) that predicts the state
         of the system given the previous state and the time range.
         It should have the signature
@@ -184,7 +186,7 @@ def apply_4DVar(
         predict the state forward, and '\*args' represents any additional
         arguments required by the state transition function.
 
-    H : Callable
+    H : Callable[[torch.Tensor], torch.Tensor]
         The observation operator that maps the state space to the observation
         space.
         It should have the signature H(x: torch.Tensor) -> torch.Tensor.
