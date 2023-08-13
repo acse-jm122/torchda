@@ -169,12 +169,18 @@ class _Executor:
         self.__parameters.observations = self.__parameters.observations.to(
             device=device
         )
-        if (
-            observation_model := self.__parameters.observation_model
-        ) is not None and isinstance(observation_model, torch.Tensor):
+        if isinstance(
+            observation_model := self.__parameters.observation_model,
+            torch.Tensor,
+        ):
             self.__parameters.observation_model = observation_model.to(
                 device=device
             )
+        # `forward_model` is optional for 3D-Var algorithm. Default is `None`.
+        if (
+            forward_model := self.__parameters.forward_model
+        ) is not None and isinstance(forward_model, torch.Tensor):
+            self.__parameters.forward_model = forward_model.to(device=device)
 
     def __wrap_forward_model(self) -> None:
         r"""
