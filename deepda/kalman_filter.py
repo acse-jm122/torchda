@@ -145,17 +145,17 @@ def apply_KF(
     x_dim = x0.numel()
     x_estimates = torch.zeros((int(sum(gaps)) + 1, x_dim), device=device)
 
-    torch_version_is_ge2 = True
     if isinstance(H, Callable):
-        torch_version_is_ge2 = (int(torch.__version__[0]) >= 2)
-        if torch_version_is_ge2:
+        if int(torch.__version__[0]) >= 2:
             jacobian = (
                 torch.func.jacrev(H)
                 if x0.numel() >= y[0].numel()
                 else torch.func.jacfwd(H)
             )
         else:
-            jacobian = torch.autograd.functional.jacobian
+            from functools import partial
+
+            jacobian = partial(torch.autograd.functional.jacobian, H)
 
     # construct initial state
     x = x0.ravel()
@@ -173,10 +173,7 @@ def apply_KF(
 
         # update
         x = X[-1]
-        if isinstance(H, Callable):
-            H_mat = jacobian(x) if torch_version_is_ge2 else jacobian(H, x)
-        else:
-            H_mat = H
+        H_mat = jacobian(x) if isinstance(H, Callable) else H
         K = (H_mat @ P0 @ H_mat.T) + R
         w = torch.linalg.solve(K, y[iobs] - (H_mat @ x))
         x = x + (P0 @ H_mat.T @ w)
