@@ -19,6 +19,9 @@ class Parameters:
     algorithm : Algorithms
         The data assimilation algorithm to use (EnKF, 3D-Var, 4D-Var).
 
+    device : Device, optional
+        The device (CPU or GPU) to perform computations on. Default is CPU.
+
     observation_model : torch.Tensor | Callable[[torch.Tensor], torch.Tensor]
         The observation model or matrix 'H' that relates the state space to
         the observation space. It can be a pre-defined tensor or a Callable
@@ -37,9 +40,6 @@ class Parameters:
 
     observations : torch.Tensor
         The observed measurements corresponding to the given observation times.
-
-    device : Device, optional
-        The device (CPU or GPU) to perform computations on. Default is CPU.
 
     forward_model : Callable[[torch.Tensor, _GenericTensor], torch.Tensor] |
         Callable[..., torch.Tensor], optional
@@ -92,6 +92,7 @@ class Parameters:
     """
 
     algorithm: Algorithms = None
+    device: Device = Device.CPU
     observation_model: torch.Tensor | Callable[
         [torch.Tensor], torch.Tensor
     ] = None
@@ -99,7 +100,6 @@ class Parameters:
     observation_covariance_matrix: torch.Tensor = None
     background_state: torch.Tensor = None
     observations: torch.Tensor = None
-    device: Device = Device.CPU
     forward_model: Callable[
         [torch.Tensor, _GenericTensor], torch.Tensor
     ] | Callable[..., torch.Tensor] = lambda *args, **kwargs: None
