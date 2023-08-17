@@ -124,7 +124,7 @@ def apply_3DVar(
         for i in range(batch_size):
             one_x0 = new_x0[i].ravel()
             x0_minus_xb = one_x0 - xb_inner[i].ravel()
-            y_minus_H_x0 = y_inner[i].ravel() - H(one_x0).ravel()
+            y_minus_H_x0 = y_inner[i].ravel() - H(one_x0.view(1, -1)).ravel()
             loss_J += x0_minus_xb @ torch.linalg.solve(
                 B, x0_minus_xb
             ) + y_minus_H_x0 @ torch.linalg.solve(R, y_minus_H_x0)
@@ -295,7 +295,7 @@ def apply_4DVar(
         current_time = time_obs[0]
         # loss_Jb = Jb(new_x0, xb, y)
         x0_minus_xb = new_x0.ravel() - xb.ravel()
-        y_minus_H_x0 = y[0].ravel() - H(new_x0.ravel()).ravel()
+        y_minus_H_x0 = y[0].ravel() - H(new_x0.view(1, -1)).ravel()
         loss_Jb = x0_minus_xb @ torch.linalg.solve(
             B, x0_minus_xb
         ) + y_minus_H_x0 @ torch.linalg.solve(R, y_minus_H_x0)
@@ -309,7 +309,7 @@ def apply_4DVar(
             )
             x = M(x, time_fw, *args)[-1]
             # loss_Jo += Jo(x, y[iobs])
-            y_minus_H_xp = y[iobs].ravel() - H(x.ravel()).ravel()
+            y_minus_H_xp = y[iobs].ravel() - H(x.view(1, -1)).ravel()
             loss_Jo += y_minus_H_xp @ torch.linalg.solve(R, y_minus_H_xp)
             current_time = time_ibos
         loss_J = loss_Jb + loss_Jo
