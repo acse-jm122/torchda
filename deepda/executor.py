@@ -63,8 +63,8 @@ class _Executor:
             "the length of `observation_time_steps`."
         )
         assert (
-            self.__parameters.num_ensembles > 1
-        ), "`num_ensembles` should be at least 1 in EnKF."
+            self.__parameters.num_ensembles >= 2
+        ), "`num_ensembles` should be at least 2 in EnKF."
 
     def __check_3DVar_parameters(self) -> None:
         assert (
