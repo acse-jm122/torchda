@@ -48,17 +48,19 @@ observations must be at least 1 in KF or EnKF, and this number must be at least 
 </ul>
 </li>
 <li><p>A callable code object <cite>M</cite> must be able to handle the 1D tensor input <cite>x</cite> with shape (state dimension,).
-The output of the <cite>M</cite> must be a 2D tensor with shape (time window sequence, state dimension).</p></li>
+The output of the <cite>M</cite> must be a 2D tensor with shape (time window sequence length, state dimension).</p></li>
 <li><p><cite>H</cite> could be either a tensor or a callable code object, and tensor <cite>H</cite> is only available in KF algorithm.</p>
 <ul>
-<li><p>If <cite>H</cite> is a callable code object, it must be able to handle the input <cite>x</cite> in 1D or 2D tensor with
-shape ([<cite>number of ensemble</cite>], state dimension), and <cite>number of ensemble</cite> is optional.
-The <cite>number of ensemble</cite> is only available in EnKF algorithm, and the input <cite>x</cite> must be a
-1D tensor with shape (state dimension,). The output of this callable code object <cite>H</cite> must
+<li><p>If <cite>H</cite> is a callable code object, it must be able to handle the input <cite>x</cite> in 2D tensor with
+shape ([<cite>number of ensemble</cite>], state dimension), and default <code class="docutils literal notranslate"><span class="pre">number</span> <span class="pre">of</span> <span class="pre">ensemble</span> <span class="pre">==</span> <span class="pre">1</span></code>
+for all algorithms except EnKF. The output of this callable code object <cite>H</cite> must
 be a corresponding shape ([<cite>number of ensemble</cite>], measurement dimension), and the output must be a
-1D tensor with shape (state dimension,) in all other algorithms.</p></li>
+2D tensor with shape (1, state dimension) in all other algorithms.</p></li>
 <li><p>If <cite>H</cite> is a tensor, it must be a 2D tensor of shape (measurement dimension, state dimension).
 This matrix maps the state space to the measurement space.</p></li>
+<li><p>Notice: A callable <cite>H</cite> code object would be approximated by the Jacobian method in KF algorithm.
+That might cause unexpected error due to incorrect shaping of tensor.
+Recommended input tensor <cite>x</cite> for the callable <cite>H</cite> is a 1D tensor (state dimension,) in KF algorithm.</p></li>
 </ul>
 </li>
 </ul>
