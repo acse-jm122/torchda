@@ -6,7 +6,7 @@ import torch
 from . import Algorithms, Device, _GenericTensor
 
 
-@dataclass
+@dataclass(slots=True)
 class Parameters:
     """
     Data class to hold parameters for data assimilation.
