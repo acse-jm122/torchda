@@ -115,10 +115,11 @@ class CaseBuilder:
         case_name: str = None,
         parameters: dict[str, Any] | Parameters = None,
     ) -> None:
-        if case_name is None:
-            self.case_name = datetime.now().strftime(
-                "case_%Y-%m-%dT%H-%M-%S.%f"
-            )
+        self.case_name = (
+            datetime.now().strftime("case_%Y-%m-%dT%H-%M-%S.%f")
+            if case_name is None
+            else case_name
+        )
         self.__parameters = Parameters()
         if parameters is not None:
             self.set_parameters(parameters)
@@ -129,7 +130,7 @@ class CaseBuilder:
     ) -> "CaseBuilder":
         if isinstance(parameters, Parameters):
             parameters = asdict(parameters)
-        checked_builder = CaseBuilder()
+        checked_builder = CaseBuilder("checker")
         for param_name, param_value in parameters.items():
             checked_builder.set_parameter(param_name, param_value)
         self.__parameters = checked_builder.__parameters
