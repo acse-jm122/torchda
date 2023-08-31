@@ -13,7 +13,7 @@ dependencies:
   - jupyter
   - matplotlib
   - pytest
-  - sphinx
+  - scikit-image
   - pip:
     - -r requirements.txt
     - -e .
