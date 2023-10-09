@@ -7,6 +7,10 @@ Use deep learning in data assimilation workflow.
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 
+Demo
+----
+[![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/acse-jm122/deepda/blob/main/examples/shallow_water_example/models.ipynb)
+
 Package Dependencies
 --------------------
 * Python 3.10 or later
