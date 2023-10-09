@@ -9,6 +9,7 @@ Use deep learning in data assimilation workflow.
 
 Demo
 ----
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/acse-jm122/deepda/blob/main/examples/shallow_water_example/models.ipynb)
 [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/acse-jm122/deepda/blob/main/examples/shallow_water_example/models.ipynb)
 
 Package Dependencies
