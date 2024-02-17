@@ -9,14 +9,14 @@ def torch():
 
 
 @fixture(scope="module")
-def deepda():
-    import deepda
+def torchda():
+    import torchda
 
-    return deepda
+    return torchda
 
 
-def test_import(deepda):
-    assert deepda
+def test_import(torchda):
+    assert torchda
 
 
 @fixture(scope="module")
@@ -25,28 +25,28 @@ def dummy_tensor(torch):
 
 
 @fixture(scope="module")
-def algorithms(deepda):
-    return deepda.Algorithms
+def algorithms(torchda):
+    return torchda.Algorithms
 
 
 @fixture(scope="module")
-def devices(deepda):
-    return deepda.Device
+def devices(torchda):
+    return torchda.Device
 
 
 @fixture(scope="module")
-def parameters(deepda):
-    return deepda.Parameters()
+def parameters(torchda):
+    return torchda.Parameters()
 
 
 @fixture(scope="module")
-def case(deepda):
-    return deepda.CaseBuilder()
+def case(torchda):
+    return torchda.CaseBuilder()
 
 
 @fixture(scope="module")
-def executor(deepda):
-    return deepda._Executor()
+def executor(torchda):
+    return torchda._Executor()
 
 
 def test_algorithms(algorithms):
@@ -160,10 +160,10 @@ def test_case_set_observation_model(case, dummy_tensor):
         assert True
 
 
-def test_case_check_covariance_matrix(deepda, case, dummy_tensor):
+def test_case_check_covariance_matrix(torchda, case, dummy_tensor):
     try:
         case.check_covariance_matrix(dummy_tensor)
-        deepda.CaseBuilder.check_covariance_matrix(dummy_tensor)
+        torchda.CaseBuilder.check_covariance_matrix(dummy_tensor)
     except Exception:
         assert False
 

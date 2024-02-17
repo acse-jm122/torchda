@@ -1,4 +1,4 @@
-name: DeepDA
+name: TorchDA
 channels:
   - defaults
   - conda-forge
