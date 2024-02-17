@@ -1,4 +1,4 @@
-# DeepDA
+# TorchDA
 Use deep learning in data assimilation workflow.
 
 [![flake8](https://github.com/acse-jm122/irp-acse-jm122/actions/workflows/flake8-format-test.yml/badge.svg)](https://github.com/acse-jm122/irp-acse-jm122/actions/workflows/flake8-format-test.yml)
