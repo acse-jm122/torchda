@@ -1,8 +1,8 @@
 Use Deep Learning in Data Assimilation
 ======================================
 
-deepda
-------
+torchda
+-------
 
 
 Important Notes:
@@ -36,5 +36,5 @@ Important Notes:
     Recommended input tensor `x` for the callable `H` is a 1D tensor (state dimension,) in KF algorithm.
 
 
-.. automodule:: deepda
+.. automodule:: torchda
   :members: Parameters, CaseBuilder, apply_KF, apply_EnKF, apply_3DVar, apply_4DVar, _Executor

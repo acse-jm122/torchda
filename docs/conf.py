@@ -3,7 +3,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.sep.join((os.curdir, ".."))))
 
-project = "deepda"
+project = "torchda"
 extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.napoleon",
               "sphinx.ext.mathjax"]
