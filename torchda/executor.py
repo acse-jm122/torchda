@@ -252,7 +252,7 @@ class _Executor:
             - 'each_ensemble_all_states'
                 Only available when algorithm is ``Algorithms.EnKF``.
 
-            - 'assimilated_background_state'
+            - 'assimilated_state'
                 Only available when algorithm is ``Algorithms.Var3D``
                 or ``Algorithms.Var4D``.
 
@@ -276,14 +276,14 @@ class _Executor:
             self.__check_3DVar_parameters()
             x0, intermediate_results = self.__call_apply_3DVar()
             self.__results = {
-                "assimilated_background_state": x0,
+                "assimilated_state": x0,
                 "intermediate_results": intermediate_results,
             }
         elif algorithm is Algorithms.Var4D:
             self.__check_4DVar_parameters()
             x0, intermediate_results = self.__call_apply_4DVar()
             self.__results = {
-                "assimilated_background_state": x0,
+                "assimilated_state": x0,
                 "intermediate_results": intermediate_results,
             }
         else:
@@ -309,7 +309,7 @@ class _Executor:
             - 'each_ensemble_all_states'
                 Only available when algorithm is ``Algorithms.EnKF``.
 
-            - 'assimilated_background_state'
+            - 'assimilated_state'
                 Only available when algorithm is ``Algorithms.Var3D``
                 or ``Algorithms.Var4D``.
 
@@ -337,7 +337,7 @@ class _Executor:
             - 'each_ensemble_all_states'
                 Only available when algorithm is ``Algorithms.EnKF``.
 
-            - 'assimilated_background_state'
+            - 'assimilated_state'
                 Only available when algorithm is ``Algorithms.Var3D``
                 or ``Algorithms.Var4D``.
 

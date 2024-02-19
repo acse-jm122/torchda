@@ -373,7 +373,7 @@ class CaseBuilder:
             - 'each_ensemble_all_states'
                 Only available when algorithm is ``Algorithms.EnKF``.
 
-            - 'assimilated_background_state'
+            - 'assimilated_state'
                 Only available when algorithm is ``Algorithms.Var3D``
                 or ``Algorithms.Var4D``.
 
