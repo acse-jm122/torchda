@@ -7,6 +7,28 @@ import torch
 from . import _GenericTensor
 
 
+def _J_dense(vector: torch.Tensor, matrix: torch.Tensor) -> int | float:
+    return vector @ matrix @ vector
+
+
+def _J_sparse(vector: torch.Tensor, matrix: torch.Tensor) -> int | float:
+    return (vector @ torch.sparse.mm(matrix, vector.view(-1, 1))).item()
+
+
+def _select_matrix_type(matrix: torch.Tensor) -> torch.Tensor:
+    # if half of elements in the matrix is zero,
+    # then convert it to a sparse matrix.
+    return (
+        matrix.to_sparse()
+        if (matrix.numel() / matrix.count_nonzero()) > 2
+        else matrix
+    )
+
+
+def _select_compute_way(matrix: torch.Tensor) -> Callable:
+    return _J_sparse if matrix.is_sparse else _J_dense
+
+
 def apply_3DVar(
     H: Callable[[torch.Tensor], torch.Tensor],
     B: torch.Tensor,
@@ -110,6 +132,11 @@ def apply_3DVar(
 
     new_x0 = torch.nn.Parameter(xb_inner.detach().clone())
 
+    B_inv = _select_matrix_type(B.inverse())
+    R_inv = _select_matrix_type(R.inverse())
+    Jb = _select_compute_way(B_inv)
+    Jo = _select_compute_way(R_inv)
+
     intermediate_results = {
         "J": [0] * max_iterations,
         "J_grad_norm": [0] * max_iterations,
@@ -125,9 +152,7 @@ def apply_3DVar(
             one_x0 = new_x0[i].ravel()
             x0_minus_xb = one_x0 - xb_inner[i].ravel()
             y_minus_H_x0 = y_inner[i].ravel() - H(one_x0.view(1, -1)).ravel()
-            loss_J += x0_minus_xb @ torch.linalg.solve(
-                B, x0_minus_xb
-            ) + y_minus_H_x0 @ torch.linalg.solve(R, y_minus_H_x0)
+            loss_J += Jb(x0_minus_xb, B_inv) + Jo(y_minus_H_x0, R_inv)
         loss_J.backward(retain_graph=True)
         loss_J, J_grad_norm = loss_J.item(), torch.norm(new_x0.grad).item()
         if record_log:
@@ -280,6 +305,11 @@ def apply_4DVar(
 
     new_x0 = torch.nn.Parameter(xb.detach().clone())
 
+    B_inv = _select_matrix_type(B.inverse())
+    R_inv = _select_matrix_type(R.inverse())
+    Jb = _select_compute_way(B_inv)
+    Jo = _select_compute_way(R_inv)
+
     intermediate_results = {
         "Jb": [0] * max_iterations,
         "Jo": [0] * max_iterations,
@@ -296,9 +326,7 @@ def apply_4DVar(
         # loss_Jb = Jb(new_x0, xb, y)
         x0_minus_xb = new_x0.ravel() - xb.ravel()
         y_minus_H_x0 = y[0].ravel() - H(new_x0.view(1, -1)).ravel()
-        loss_Jb = x0_minus_xb @ torch.linalg.solve(
-            B, x0_minus_xb
-        ) + y_minus_H_x0 @ torch.linalg.solve(R, y_minus_H_x0)
+        loss_Jb = Jb(x0_minus_xb, B_inv) + Jo(y_minus_H_x0, R_inv)
         x = new_x0
         loss_Jo = 0
         for iobs, (time_ibos, gap) in enumerate(
@@ -310,7 +338,7 @@ def apply_4DVar(
             x = M(x, time_fw, *args)[-1]
             # loss_Jo += Jo(x, y[iobs])
             y_minus_H_xp = y[iobs].ravel() - H(x.view(1, -1)).ravel()
-            loss_Jo += y_minus_H_xp @ torch.linalg.solve(R, y_minus_H_xp)
+            loss_Jo += Jo(y_minus_H_xp, R_inv)
             current_time = time_ibos
         loss_J = loss_Jb + loss_Jo
         loss_J.backward(retain_graph=True)
