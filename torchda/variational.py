@@ -7,11 +7,11 @@ import torch
 from . import _GenericTensor
 
 
-def _J_dense(vector: torch.Tensor, matrix: torch.Tensor) -> int | float:
+def _J_dense(vector: torch.Tensor, matrix: torch.Tensor) -> torch.Tensor:
     return vector @ matrix @ vector
 
 
-def _J_sparse(vector: torch.Tensor, matrix: torch.Tensor) -> int | float:
+def _J_sparse(vector: torch.Tensor, matrix: torch.Tensor) -> torch.Tensor:
     return vector @ torch.sparse.mm(matrix, vector.view(-1, 1))
 
 
