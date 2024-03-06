@@ -12,7 +12,7 @@ def _J_dense(vector: torch.Tensor, matrix: torch.Tensor) -> int | float:
 
 
 def _J_sparse(vector: torch.Tensor, matrix: torch.Tensor) -> int | float:
-    return (vector @ torch.sparse.mm(matrix, vector.view(-1, 1))).item()
+    return vector @ torch.sparse.mm(matrix, vector.view(-1, 1))
 
 
 def _select_matrix_type(matrix: torch.Tensor) -> torch.Tensor:
