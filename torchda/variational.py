@@ -117,15 +117,6 @@ def apply_3DVar(
         raise TypeError(
             f"`H` must be a Callable in 3DVar, but given {type(H)=}"
         )
-    if record_log:
-        # Set up logging with a timestamp in the log file name
-        timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S.%f")
-        logger = logging.getLogger(timestamp)
-        logger.addHandler(
-            logging.FileHandler(f"3dvar_data_assimilation_{timestamp}.log")
-        )
-        logger.addHandler(logging.StreamHandler())
-        logger.setLevel(logging.INFO)
 
     xb_inner = xb.unsqueeze(0) if xb.ndim == 1 else xb
     y_inner = y.unsqueeze(0) if y.ndim == 1 else y
@@ -145,6 +136,17 @@ def apply_3DVar(
 
     optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
     batch_size = xb_inner.size(0)
+
+    if record_log:
+        # Set up logging with a timestamp in the log file name
+        timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+        logger = logging.getLogger(timestamp)
+        logger.addHandler(
+            logging.FileHandler(f"3dvar_data_assimilation_{timestamp}.log")
+        )
+        logger.addHandler(logging.StreamHandler())
+        logger.setLevel(logging.INFO)
+
     for n in range(max_iterations):
         optimizer.zero_grad(set_to_none=True)
         loss_J = 0
@@ -293,15 +295,6 @@ def apply_4DVar(
         raise TypeError(
             f"`H` must be a Callable in 4DVar, but given {type(H)=}"
         )
-    if record_log:
-        # Set up logger with a timestamp in the log file name
-        timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S.%f")
-        logger = logging.getLogger(timestamp)
-        logger.addHandler(
-            logging.FileHandler(f"4dvar_data_assimilation_{timestamp}.log")
-        )
-        logger.addHandler(logging.StreamHandler())
-        logger.setLevel(logging.INFO)
 
     new_x0 = torch.nn.Parameter(xb.detach().clone())
 
@@ -320,6 +313,17 @@ def apply_4DVar(
 
     optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
     device = xb.device
+
+    if record_log:
+        # Set up logger with a timestamp in the log file name
+        timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+        logger = logging.getLogger(timestamp)
+        logger.addHandler(
+            logging.FileHandler(f"4dvar_data_assimilation_{timestamp}.log")
+        )
+        logger.addHandler(logging.StreamHandler())
+        logger.setLevel(logging.INFO)
+
     for n in range(max_iterations):
         optimizer.zero_grad(set_to_none=True)
         current_time = time_obs[0]
