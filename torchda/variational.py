@@ -29,6 +29,18 @@ def _select_compute_way(matrix: torch.Tensor) -> Callable:
     return _J_sparse if matrix.is_sparse else _J_dense
 
 
+def _get_matrix_inv_and_J_func(
+    matrix: torch.Tensor,
+) -> tuple[torch.Tensor,
+           Callable[[torch.Tensor, torch.Tensor], torch.Tensor]]:
+    matrix_inv = matrix.inverse()
+    torch.cuda.empty_cache()
+    matrix_inv = _select_matrix_type(matrix_inv)
+    torch.cuda.empty_cache()
+    J_func = _select_compute_way(matrix_inv)
+    return matrix_inv, J_func
+
+
 def apply_3DVar(
     H: Callable[[torch.Tensor], torch.Tensor],
     B: torch.Tensor,
@@ -123,10 +135,8 @@ def apply_3DVar(
 
     new_x0 = torch.nn.Parameter(xb_inner.detach().clone())
 
-    B_inv = _select_matrix_type(B.inverse())
-    R_inv = _select_matrix_type(R.inverse())
-    Jb = _select_compute_way(B_inv)
-    Jo = _select_compute_way(R_inv)
+    B_inv, Jb = _get_matrix_inv_and_J_func(B)
+    R_inv, Jo = _get_matrix_inv_and_J_func(R)
 
     intermediate_results = {
         "J": [0] * max_iterations,
@@ -298,10 +308,8 @@ def apply_4DVar(
 
     new_x0 = torch.nn.Parameter(xb.detach().clone())
 
-    B_inv = _select_matrix_type(B.inverse())
-    R_inv = _select_matrix_type(R.inverse())
-    Jb = _select_compute_way(B_inv)
-    Jo = _select_compute_way(R_inv)
+    B_inv, Jb = _get_matrix_inv_and_J_func(B)
+    R_inv, Jo = _get_matrix_inv_and_J_func(R)
 
     intermediate_results = {
         "Jb": [0] * max_iterations,
