@@ -16,7 +16,7 @@ def _J_sparse(vector: torch.Tensor, matrix: torch.Tensor) -> torch.Tensor:
 
 
 def _select_matrix_type(matrix: torch.Tensor) -> torch.Tensor:
-    # if one third of elements in the matrix is zero,
+    # if two thirds of elements in the matrix are zero,
     # then convert it to a sparse matrix.
     return (
         matrix.to_sparse()
