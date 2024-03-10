@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from typing import Callable
 
@@ -147,36 +146,50 @@ def apply_3DVar(
     optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
     batch_size = xb_inner.size(0)
 
-    if record_log:
-        # Set up logging with a timestamp in the log file name
-        timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-        logger = logging.getLogger(timestamp)
-        logger.addHandler(
-            logging.FileHandler(f"3dvar_data_assimilation_{timestamp}.log")
+    log_file = None
+    try:
+        log_template = (
+            "Timestamp: {timestamp}, "
+            "Iterations: {iteration}, J: {loss_J}, "
+            "Norm of J gradient: {J_grad_norm}"
         )
-        logger.addHandler(logging.StreamHandler())
-        logger.setLevel(logging.INFO)
-
-    for n in range(max_iterations):
-        optimizer.zero_grad(set_to_none=True)
-        loss_J = 0
-        for i in range(batch_size):
-            one_x0 = new_x0[i].ravel()
-            x0_minus_xb = one_x0 - xb_inner[i].ravel()
-            y_minus_H_x0 = y_inner[i].ravel() - H(one_x0.view(1, -1)).ravel()
-            loss_J += Jb(x0_minus_xb, B_inv) + Jo(y_minus_H_x0, R_inv)
-        loss_J.backward(retain_graph=True)
-        loss_J, J_grad_norm = loss_J.item(), torch.norm(new_x0.grad).item()
         if record_log:
-            logger.info(
-                f"Iterations: {n}, J: {loss_J}, "
-                f"Norm of J gradient: {J_grad_norm}"
+            # Set up logging with a timestamp in the log file name
+            timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S.%f")
+            log_file = open(f"3dvar_data_assimilation_{timestamp}.log", "w")
+
+        for n in range(max_iterations):
+            optimizer.zero_grad(set_to_none=True)
+            loss_J = 0
+            for i in range(batch_size):
+                one_x0 = new_x0[i].ravel()
+                x0_minus_xb = one_x0 - xb_inner[i].ravel()
+                y_minus_H_x0 = (
+                    y_inner[i].ravel() - H(one_x0.view(1, -1)).ravel()
+                )
+                loss_J += Jb(x0_minus_xb, B_inv) + Jo(y_minus_H_x0, R_inv)
+            loss_J.backward(retain_graph=True)
+
+            loss_J = loss_J.item()
+            J_grad_norm = torch.norm(new_x0.grad).item()
+            log_message = log_template.format(
+                timestamp=datetime.now(),
+                iteration=n,
+                loss_J=loss_J,
+                J_grad_norm=J_grad_norm,
             )
-        optimizer.step()
-        intermediate_results["J"][n] = loss_J
-        intermediate_results["J_grad_norm"][n] = J_grad_norm
-        latest_x0 = new_x0.detach().clone().view_as(xb)
-        intermediate_results["background_states"][n] = latest_x0
+            print(log_message)
+            if record_log:
+                print(log_message, file=log_file)
+
+            optimizer.step()
+            intermediate_results["J"][n] = loss_J
+            intermediate_results["J_grad_norm"][n] = J_grad_norm
+            latest_x0 = new_x0.detach().clone().view_as(xb)
+            intermediate_results["background_states"][n] = latest_x0
+    finally:
+        if log_file:
+            log_file.close()
 
     return latest_x0, intermediate_results
 
@@ -322,51 +335,65 @@ def apply_4DVar(
     optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
     device = xb.device
 
-    if record_log:
-        # Set up logger with a timestamp in the log file name
-        timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-        logger = logging.getLogger(timestamp)
-        logger.addHandler(
-            logging.FileHandler(f"4dvar_data_assimilation_{timestamp}.log")
+    log_file = None
+    try:
+        log_template = (
+            "Timestamp: {timestamp}, "
+            "Iterations: {iteration}, Jb: {loss_Jb}, Jo: {loss_Jo}, "
+            "J: {loss_J}, Norm of J gradient: {J_grad_norm}"
         )
-        logger.addHandler(logging.StreamHandler())
-        logger.setLevel(logging.INFO)
-
-    for n in range(max_iterations):
-        optimizer.zero_grad(set_to_none=True)
-        current_time = time_obs[0]
-        # loss_Jb = Jb(new_x0, xb, y)
-        x0_minus_xb = new_x0.ravel() - xb.ravel()
-        y_minus_H_x0 = y[0].ravel() - H(new_x0.view(1, -1)).ravel()
-        loss_Jb = Jb(x0_minus_xb, B_inv) + Jo(y_minus_H_x0, R_inv)
-        x = new_x0
-        loss_Jo = 0
-        for iobs, (time_ibos, gap) in enumerate(
-            zip(time_obs[1:], gaps), start=1
-        ):
-            time_fw = torch.linspace(
-                current_time, time_ibos, gap + 1, device=device
-            )
-            x = M(x, time_fw, *args)[-1]
-            # loss_Jo += Jo(x, y[iobs])
-            y_minus_H_xp = y[iobs].ravel() - H(x.view(1, -1)).ravel()
-            loss_Jo += Jo(y_minus_H_xp, R_inv)
-            current_time = time_ibos
-        loss_J = loss_Jb + loss_Jo
-        loss_J.backward(retain_graph=True)
-        loss_Jb, loss_Jo = loss_Jb.item(), loss_Jo.item()
-        loss_J, J_grad_norm = loss_J.item(), torch.norm(new_x0.grad).item()
         if record_log:
-            logger.info(
-                f"Iterations: {n}, Jb: {loss_Jb}, Jo: {loss_Jo}, "
-                f"J: {loss_J}, Norm of J gradient: {J_grad_norm}"
+            # Set up logging with a timestamp in the log file name
+            timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S.%f")
+            log_file = open(f"4dvar_data_assimilation_{timestamp}.log", "w")
+
+        for n in range(max_iterations):
+            optimizer.zero_grad(set_to_none=True)
+            current_time = time_obs[0]
+            # loss_Jb = Jb(new_x0, xb, y)
+            x0_minus_xb = new_x0.ravel() - xb.ravel()
+            y_minus_H_x0 = y[0].ravel() - H(new_x0.view(1, -1)).ravel()
+            loss_Jb = Jb(x0_minus_xb, B_inv) + Jo(y_minus_H_x0, R_inv)
+            x = new_x0
+            loss_Jo = 0
+            for iobs, (time_ibos, gap) in enumerate(
+                zip(time_obs[1:], gaps), start=1
+            ):
+                time_fw = torch.linspace(
+                    current_time, time_ibos, gap + 1, device=device
+                )
+                x = M(x, time_fw, *args)[-1]
+                # loss_Jo += Jo(x, y[iobs])
+                y_minus_H_xp = y[iobs].ravel() - H(x.view(1, -1)).ravel()
+                loss_Jo += Jo(y_minus_H_xp, R_inv)
+                current_time = time_ibos
+            loss_J = loss_Jb + loss_Jo
+            loss_J.backward(retain_graph=True)
+
+            loss_Jb, loss_Jo = loss_Jb.item(), loss_Jo.item()
+            loss_J = loss_J.item()
+            J_grad_norm = torch.norm(new_x0.grad).item()
+            log_message = log_template.format(
+                timestamp=datetime.now(),
+                iteration=n,
+                loss_Jb=loss_Jb,
+                loss_Jo=loss_Jo,
+                loss_J=loss_J,
+                J_grad_norm=J_grad_norm,
             )
-        optimizer.step()
-        intermediate_results["Jb"][n] = loss_Jb
-        intermediate_results["Jo"][n] = loss_Jo
-        intermediate_results["J"][n] = loss_J
-        intermediate_results["J_grad_norm"][n] = J_grad_norm
-        latest_x0 = new_x0.detach().clone()
-        intermediate_results["background_states"][n] = latest_x0
+            print(log_message)
+            if record_log:
+                print(log_message, file=log_file)
+
+            optimizer.step()
+            intermediate_results["Jb"][n] = loss_Jb
+            intermediate_results["Jo"][n] = loss_Jo
+            intermediate_results["J"][n] = loss_J
+            intermediate_results["J_grad_norm"][n] = J_grad_norm
+            latest_x0 = new_x0.detach().clone()
+            intermediate_results["background_states"][n] = latest_x0
+    finally:
+        if log_file:
+            log_file.close()
 
     return latest_x0, intermediate_results
