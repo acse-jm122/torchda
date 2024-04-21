@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Callable
+from typing import Any, Callable, Type
 
 import torch
 
@@ -46,8 +46,9 @@ def apply_3DVar(
     R: torch.Tensor,
     xb: torch.Tensor,
     y: torch.Tensor,
+    optimizer_cls: Type[torch.optim.Optimizer] = None,
+    optimizer_args: dict[str, Any] = None,
     max_iterations: int = 1000,
-    learning_rate: float = 1e-3,
     record_log: bool = True,
 ) -> tuple[torch.Tensor, dict[str, list]]:
     r"""
@@ -83,11 +84,16 @@ def apply_3DVar(
         The observed measurements. A 1D or 2D tensor of shape
         (observation_dim,) or (batch_size, observation_dim).
 
+    optimizer_cls : Type[torch.optim.Optimizer], optional
+        The optimizer selected in the optimization algorithm.
+        Default is 'AdamW'.
+
+    optimizer_args : dict[str, Any], optional
+        The hyperparameters in the selected optimizer class.
+        Default is {'lr': 1e-3}.
+
     max_iterations : int, optional
         The maximum number of optimization iterations. Default is 1000.
-
-    learning_rate : float, optional
-        The learning rate for the optimization algorithm. Default is 1e-3.
 
     record_log : bool, optional
         Whether to record and print logs for iteration progress.
@@ -143,7 +149,12 @@ def apply_3DVar(
         "background_states": [0] * max_iterations,
     }
 
-    optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
+    if optimizer_cls is None:
+        optimizer_cls = torch.optim.AdamW
+    if optimizer_args is None:
+        optimizer_args = {"lr": 1e-3}
+
+    optimizer = optimizer_cls([new_x0], **optimizer_args)
     batch_size = xb_inner.size(0)
 
     log_file = None
@@ -197,16 +208,19 @@ def apply_3DVar(
 def apply_4DVar(
     time_obs: _GenericTensor,
     gaps: _GenericTensor,
-    M: Callable[[torch.Tensor, _GenericTensor], torch.Tensor]
-    | Callable[..., torch.Tensor],
+    M: (
+        Callable[[torch.Tensor, _GenericTensor], torch.Tensor]
+        | Callable[..., torch.Tensor]
+    ),
     H: Callable[[torch.Tensor], torch.Tensor],
     B: torch.Tensor,
     R: torch.Tensor,
     xb: torch.Tensor,
     y: torch.Tensor,
     *args,
+    optimizer_cls: Type[torch.optim.Optimizer] = None,
+    optimizer_args: dict[str, Any] = None,
     max_iterations: int = 1000,
-    learning_rate: float = 1e-3,
     record_log: bool = True,
 ) -> tuple[torch.Tensor, dict[str, list]]:
     r"""
@@ -262,11 +276,16 @@ def apply_4DVar(
     args : tuple, optional
         Additional arguments to pass to the state transition function 'M'.
 
+    optimizer_cls : Type[torch.optim.Optimizer], optional
+        The optimizer class selected in the optimization algorithm.
+        Default is 'AdamW'.
+
+    optimizer_args : dict[str, Any], optional
+        The hyperparameters in the selected optimizer class.
+        Default is {'lr': 1e-3}.
+
     max_iterations : int, optional
         The maximum number of optimization iterations. Default is 1000.
-
-    learning_rate : float, optional
-        The learning rate for the optimization algorithm. Default is 1e-3.
 
     record_log : bool, optional
         Whether to record and print logs for iteration progress.
@@ -332,7 +351,12 @@ def apply_4DVar(
         "background_states": [0] * max_iterations,
     }
 
-    optimizer = torch.optim.Adam([new_x0], lr=learning_rate)
+    if optimizer_cls is None:
+        optimizer_cls = torch.optim.AdamW
+    if optimizer_args is None:
+        optimizer_args = {"lr": 1e-3}
+
+    optimizer = optimizer_cls([new_x0], **optimizer_args)
     device = xb.device
 
     log_file = None

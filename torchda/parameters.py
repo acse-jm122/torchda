@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Callable
+from dataclasses import dataclass, field
+from typing import Any, Callable, Type
 
 import torch
 
@@ -66,12 +66,18 @@ class Parameters:
     start_time : int | float, optional
         The starting time of the data assimilation process. Default is 0.0.
 
+    optimizer_cls : Type[torch.optim.Optimizer], optional
+        The selected optimizer class for
+        optimization-based algorithms (3D-Var, 4D-Var).
+
+    optimizer_args : dict[str, Any], optional
+        The hyperparameters in the selected optimizer class
+        for optimization-based algorithms (3D-Var, 4D-Var).
+        Default is {'lr': 1e-3}.
+
     max_iterations : int, optional
         The maximum number of iterations for
         optimization-based algorithms (3D-Var, 4D-Var).
-
-    learning_rate : int | float, optional
-        The learning rate for optimization-based algorithms (3D-Var, 4D-Var).
 
     record_log : bool, optional
         Whether to record and print logs for iteration progress.
@@ -86,29 +92,33 @@ class Parameters:
       the algorithm's requirements.
     - For EnKF, 'forward_model' should be provided,
       and 'observation_time_steps' should have at least 1 time point.
-    - For 3D-Var and 4D-Var, 'max_iterations' and 'learning_rate' control the
-      optimization process.
+    - For 3D-Var and 4D-Var, 'optimizer_cls', 'optimizer_args',
+      and 'max_iterations' control the optimization process.
     - For 4D-Var, 'observation_time_steps' should have at least 2 time points.
     """
 
     algorithm: Algorithms = None
     device: Device = Device.CPU
-    observation_model: torch.Tensor | Callable[
-        [torch.Tensor], torch.Tensor
-    ] = None
+    observation_model: (
+        torch.Tensor | Callable[[torch.Tensor], torch.Tensor]
+    ) = None
     background_covariance_matrix: torch.Tensor = None
     observation_covariance_matrix: torch.Tensor = None
     background_state: torch.Tensor = None
     observations: torch.Tensor = None
-    forward_model: Callable[
-        [torch.Tensor, _GenericTensor], torch.Tensor
-    ] | Callable[..., torch.Tensor] = lambda *args, **kwargs: None
+    forward_model: (
+        Callable[[torch.Tensor, _GenericTensor], torch.Tensor]
+        | Callable[..., torch.Tensor]
+    ) = lambda *args, **kwargs: None
     output_sequence_length: int = 1
     observation_time_steps: _GenericTensor = ()
     gaps: _GenericTensor = ()
     num_ensembles: int = 0
     start_time: int | float = 0.0
+    optimizer_cls: Type[torch.optim.Optimizer] = torch.optim.AdamW
+    optimizer_args: dict[str, Any] = field(
+        default_factory=lambda: {"lr": 1e-3}
+    )
     max_iterations: int = 1000
-    learning_rate: int | float = 0.001
     record_log: bool = True
     args: tuple = ()

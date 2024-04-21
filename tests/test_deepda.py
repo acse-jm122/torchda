@@ -80,6 +80,7 @@ def test_parameters_attributes(parameters):
     for key in (
         "algorithm",
         "device",
+        "observation_model",
         "background_covariance_matrix",
         "observation_covariance_matrix",
         "background_state",
@@ -90,8 +91,9 @@ def test_parameters_attributes(parameters):
         "gaps",
         "num_ensembles",
         "start_time",
+        "optimizer_cls",
+        "optimizer_args",
         "max_iterations",
-        "learning_rate",
         "record_log",
         "args",
     ):
@@ -207,7 +209,7 @@ def test_case_set_observations(case, dummy_tensor):
     assert case.set_parameter("observations", dummy_tensor)
     try:
         case.set_parameter("observations", lambda _: None)
-        assert False, "observations must be a callable."
+        assert False, "observations must be an instance of Tensor."
     except TypeError:
         assert True
 
@@ -292,16 +294,26 @@ def test_case_set_max_iterations(case):
         assert True
 
 
-def test_case_set_learning_rate(case):
-    assert case.set_learning_rate(1e-3)
-    assert case.set_learning_rate(5)
-    assert case.set_parameter("learning_rate", 1e-3)
-    assert case.set_parameter("learning_rate", 5)
+def test_case_set_optimizer_cls(case, torch):
+    assert case.set_optimizer_cls(torch.optim.Adam)
+    assert case.set_parameter("optimizer_cls", torch.optim.Adam)
     try:
-        case.set_parameter("learning_rate", "0.01")
+        case.set_parameter("optimizer_cls", torch.Tensor)
         assert (
             False
-        ), "learning_rate must be an integer or a floating point number."
+        ), "optimizer_cls must be a subclass of torch.optim.Optimizer."
+    except TypeError:
+        assert True
+
+
+def test_case_set_optimizer_args(case):
+    assert case.set_optimizer_args({"lr": 1e-3})
+    assert case.set_parameter("optimizer_args", {"lr": 1e-3})
+    try:
+        case.set_parameter("optimizer_args", [])
+        assert (
+            False
+        ), "optimizer_args must be an instance of dict[str, Any]."
     except TypeError:
         assert True
 

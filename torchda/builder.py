@@ -1,6 +1,6 @@
 from dataclasses import asdict
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any, Callable, Type
 
 import torch
 from numpy.linalg import LinAlgError
@@ -90,12 +90,17 @@ class CaseBuilder:
     set_args(args: tuple) -> CaseBuilder:
         Set additional arguments for state transition function.
 
+    set_optimizer_cls(optimizer_cls: Type[torch.optim.Optimizer])
+        -> CaseBuilder:
+        Set the optimizer class for optimization-based algorithms.
+
+    set_optimizer_args(optimizer_args: dict[str, Any])
+        -> CaseBuilder:
+        Set the optimizer class arguments for optimization-based algorithms.
+
     set_max_iterations(max_iterations: int) -> CaseBuilder:
         Set the maximum number of iterations for
         optimization-based algorithms.
-
-    set_learning_rate(learning_rate: int | float) -> CaseBuilder:
-        Set the learning rate for optimization-based algorithms.
 
     set_record_log(record_log: bool) -> CaseBuilder:
         Set whether to record and print log messages during execution.
@@ -160,8 +165,10 @@ class CaseBuilder:
 
     def set_forward_model(
         self,
-        forward_model: Callable[[torch.Tensor, _GenericTensor], torch.Tensor]
-        | Callable[..., torch.Tensor],
+        forward_model: (
+            Callable[[torch.Tensor, _GenericTensor], torch.Tensor]
+            | Callable[..., torch.Tensor]
+        ),
     ) -> "CaseBuilder":
         if not isinstance(forward_model, Callable):
             raise TypeError(
@@ -184,8 +191,9 @@ class CaseBuilder:
 
     def set_observation_model(
         self,
-        observation_model: torch.Tensor
-        | Callable[[torch.Tensor], torch.Tensor],
+        observation_model: (
+            torch.Tensor | Callable[[torch.Tensor], torch.Tensor]
+        ),
     ) -> "CaseBuilder":
         if not isinstance(observation_model, (torch.Tensor, Callable)):
             raise TypeError(
@@ -326,6 +334,28 @@ class CaseBuilder:
         self.__parameters.args = args
         return self
 
+    def set_optimizer_cls(
+        self, optimizer_cls: Type[torch.optim.Optimizer]
+    ) -> "CaseBuilder":
+        if not issubclass(optimizer_cls, torch.optim.Optimizer):
+            raise TypeError(
+                "optimizer_cls must be a subclass of "
+                f"torch.optim.Optimizer, given {optimizer_cls=}"
+            )
+        self.__parameters.optimizer_cls = optimizer_cls
+        return self
+
+    def set_optimizer_args(
+        self, optimizer_args: dict[str, Any]
+    ) -> "CaseBuilder":
+        if not isinstance(optimizer_args, dict):
+            raise TypeError(
+                "optimizer_args must be an instance of "
+                f"dict[str, Any], given {type(optimizer_args)=}"
+            )
+        self.__parameters.optimizer_args = optimizer_args
+        return self
+
     def set_max_iterations(self, max_iterations: int) -> "CaseBuilder":
         if not isinstance(max_iterations, int):
             raise TypeError(
@@ -333,15 +363,6 @@ class CaseBuilder:
                 f"given {type(max_iterations)=}"
             )
         self.__parameters.max_iterations = max_iterations
-        return self
-
-    def set_learning_rate(self, learning_rate: int | float) -> "CaseBuilder":
-        if not isinstance(learning_rate, (int, float)):
-            raise TypeError(
-                "learning_rate must be an integer or "
-                f"a floating point number, given {type(learning_rate)=}"
-            )
-        self.__parameters.learning_rate = learning_rate
         return self
 
     def set_record_log(self, record_log: bool) -> "CaseBuilder":
