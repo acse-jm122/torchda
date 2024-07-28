@@ -377,9 +377,9 @@ def apply_4DVar(
             # loss_Jb = Jb(new_x0, xb, y)
             x0_minus_xb = new_x0.ravel() - xb.ravel()
             y_minus_H_x0 = y[0].ravel() - H(new_x0.view(1, -1)).ravel()
-            loss_Jb = Jb(x0_minus_xb, B_inv) + Jo(y_minus_H_x0, R_inv)
+            loss_Jb = Jb(x0_minus_xb, B_inv)
             x = new_x0
-            loss_Jo = 0
+            loss_Jo = Jo(y_minus_H_x0, R_inv)
             for iobs, (time_ibos, gap) in enumerate(
                 zip(time_obs[1:], gaps), start=1
             ):
