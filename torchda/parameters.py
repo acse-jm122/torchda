@@ -79,6 +79,11 @@ class Parameters:
         The maximum number of iterations for
         optimization-based algorithms (3D-Var, 4D-Var).
 
+    early_stop : tuple[int, int | float] | None, optional
+        The early stopping criterion
+        (early_stop_iterations, absolute_tolerance) applied on
+        optimization-based algorithms (3D-Var, 4D-Var).
+
     record_log : bool, optional
         Whether to record and print logs for iteration progress.
         Default is True.
@@ -120,5 +125,6 @@ class Parameters:
         default_factory=lambda: {"lr": 1e-3}
     )
     max_iterations: int = 1000
+    early_stop: tuple[int, int | float] | None = None
     record_log: bool = True
     args: tuple = ()

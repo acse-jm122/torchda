@@ -94,6 +94,7 @@ def test_parameters_attributes(parameters):
         "optimizer_cls",
         "optimizer_args",
         "max_iterations",
+        "early_stop",
         "record_log",
         "args",
     ):
@@ -106,7 +107,7 @@ def test_case_attributes(case):
 
 def test_case_set_parameter(case):
     try:
-        executor.set_parameter("nonexistent_attr", None)
+        case.set_parameter("nonexistent_attr", None)
         assert False, "No setter for a nonexistent attribute."
     except AttributeError:
         assert True
@@ -311,11 +312,30 @@ def test_case_set_optimizer_args(case):
     assert case.set_parameter("optimizer_args", {"lr": 1e-3})
     try:
         case.set_parameter("optimizer_args", [])
-        assert (
-            False
-        ), "optimizer_args must be an instance of dict[str, Any]."
+        assert False, "optimizer_args must be an instance of dict[str, Any]."
     except TypeError:
         assert True
+
+
+def test_early_stop(case):
+    assert case.set_early_stop((50, 0.01))
+    assert case.set_early_stop((0, 0))
+    assert case.set_parameter("early_stop", None)
+
+    def assert_raise(input):
+        try:
+            case.set_parameter("early_stop", input)
+            assert (
+                False
+            ), "early_stop must be a (int, int | float) tuple or None."
+        except TypeError:
+            assert True
+
+    assert_raise("0")
+    assert_raise([5, 0.0])
+    assert_raise((0, 0, 0))
+    assert_raise((1.25, 0))
+    assert_raise((1, "0"))
 
 
 def test_case_set_record_log(case):

@@ -102,6 +102,11 @@ class CaseBuilder:
         Set the maximum number of iterations for
         optimization-based algorithms.
 
+    set_early_stop(early_stop: tuple[int, int | float] | None) -> CaseBuilder:
+        Set the early stopping criterion
+        (early_stop_iterations, absolute_tolerance) for
+        optimization-based algorithms.
+
     set_record_log(record_log: bool) -> CaseBuilder:
         Set whether to record and print log messages during execution.
 
@@ -363,6 +368,25 @@ class CaseBuilder:
                 f"given {type(max_iterations)=}"
             )
         self.__parameters.max_iterations = max_iterations
+        return self
+
+    def set_early_stop(
+        self, early_stop: tuple[int, int | float] | None
+    ) -> "CaseBuilder":
+        if not (
+            early_stop is None
+            or (
+                isinstance(early_stop, tuple)
+                and len(early_stop) == 2
+                and isinstance(early_stop[0], int)
+                and isinstance(early_stop[1], (int, float))
+            )
+        ):
+            raise TypeError(
+                "early_stop must be a (int, int | float) "
+                f"tuple or None, given {type(early_stop)=}"
+            )
+        self.__parameters.early_stop = early_stop
         return self
 
     def set_record_log(self, record_log: bool) -> "CaseBuilder":

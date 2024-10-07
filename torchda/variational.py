@@ -49,6 +49,7 @@ def apply_3DVar(
     optimizer_cls: Type[torch.optim.Optimizer] = None,
     optimizer_args: dict[str, Any] = None,
     max_iterations: int = 1000,
+    early_stop: tuple[int, int | float] | None = None,
     record_log: bool = True,
 ) -> tuple[torch.Tensor, dict[str, list]]:
     r"""
@@ -94,6 +95,10 @@ def apply_3DVar(
 
     max_iterations : int, optional
         The maximum number of optimization iterations. Default is 1000.
+
+    early_stop : tuple[int, int | float] | None, optional
+        The early stopping criterion
+        (early_stop_iterations, absolute_tolerance). Default is None.
 
     record_log : bool, optional
         Whether to record and print logs for iteration progress.
@@ -192,6 +197,20 @@ def apply_3DVar(
             print(log_message)
             if record_log:
                 print(log_message, file=log_file)
+            if early_stop:
+                if n == 0:
+                    best_loss = loss_J
+                    remain_iterations, abs_tolerance = early_stop
+                elif (best_loss - loss_J) < abs_tolerance:
+                    if remain_iterations == 0:
+                        for k, v in intermediate_results.items():
+                            intermediate_results[k] = v[:n]
+                        break
+                    else:
+                        remain_iterations -= 1
+                else:
+                    remain_iterations = early_stop[0]
+                    best_loss = loss_J
 
             optimizer.step()
             intermediate_results["J"][n] = loss_J
@@ -221,6 +240,7 @@ def apply_4DVar(
     optimizer_cls: Type[torch.optim.Optimizer] = None,
     optimizer_args: dict[str, Any] = None,
     max_iterations: int = 1000,
+    early_stop: tuple[int, int | float] | None = None,
     record_log: bool = True,
 ) -> tuple[torch.Tensor, dict[str, list]]:
     r"""
@@ -286,6 +306,10 @@ def apply_4DVar(
 
     max_iterations : int, optional
         The maximum number of optimization iterations. Default is 1000.
+
+    early_stop : tuple[int, int | float] | None, optional
+        The early stopping criterion
+        (early_stop_iterations, absolute_tolerance). Default is None.
 
     record_log : bool, optional
         Whether to record and print logs for iteration progress.
@@ -408,6 +432,20 @@ def apply_4DVar(
             print(log_message)
             if record_log:
                 print(log_message, file=log_file)
+            if early_stop:
+                if n == 0:
+                    best_loss = loss_J
+                    remain_iterations, abs_tolerance = early_stop
+                elif (best_loss - loss_J) < abs_tolerance:
+                    if remain_iterations == 0:
+                        for k, v in intermediate_results.items():
+                            intermediate_results[k] = v[:n]
+                        break
+                    else:
+                        remain_iterations -= 1
+                else:
+                    remain_iterations = early_stop[0]
+                    best_loss = loss_J
 
             optimizer.step()
             intermediate_results["Jb"][n] = loss_Jb

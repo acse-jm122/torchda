@@ -73,6 +73,19 @@ class _Executor:
         assert issubclass(
             self.__parameters.optimizer_cls, torch.optim.Optimizer
         ), "`optimizer_cls` should be a subclass of `torch.optim.Optimizer`."
+        assert (
+            self.__parameters.early_stop is None
+            or (
+                isinstance(self.__parameters.early_stop, tuple)
+                and len(self.__parameters.early_stop) == 2
+                and self.__parameters.early_stop[0] >= 0
+                and self.__parameters.early_stop[1] >= 0
+            )
+        ), (
+            "early_stop should be None or "
+            "(early_stop_iterations and absolute_tolerance) should "
+            "be greater than or equal to 0."
+        )
 
     def __check_4DVar_parameters(self) -> None:
         self.__check_3DVar_parameters()
@@ -136,6 +149,7 @@ class _Executor:
             self.__parameters.optimizer_cls,
             self.__parameters.optimizer_args,
             self.__parameters.max_iterations,
+            self.__parameters.early_stop,
             self.__parameters.record_log,
         )
 
@@ -163,6 +177,7 @@ class _Executor:
             optimizer_cls=self.__parameters.optimizer_cls,
             optimizer_args=self.__parameters.optimizer_args,
             max_iterations=self.__parameters.max_iterations,
+            early_stop=self.__parameters.early_stop,
             record_log=self.__parameters.record_log,
         )
 
