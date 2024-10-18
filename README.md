@@ -2,6 +2,7 @@
 Use deep learning in data assimilation workflow.
 [**Paper link**](https://arxiv.org/abs/2409.00244)
 
+[![arxiv badge](https://img.shields.io/badge/arXiv-2409.00244-red)](https://arxiv.org/abs/2409.00244)
 [![flake8](https://github.com/acse-jm122/irp-acse-jm122/actions/workflows/flake8-format-test.yml/badge.svg)](https://github.com/acse-jm122/irp-acse-jm122/actions/workflows/flake8-format-test.yml)
 [![pytest](https://github.com/acse-jm122/irp-acse-jm122/actions/workflows/pytest-conda.yml/badge.svg)](https://github.com/acse-jm122/irp-acse-jm122/actions/workflows/pytest-conda.yml)
 [![License](https://img.shields.io/github/license/acse-jm122/torchda
