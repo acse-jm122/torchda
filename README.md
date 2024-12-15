@@ -19,6 +19,13 @@ Tutorials (4 notebooks)
 | [Testing Demo on Variational Methods](https://github.com/acse-jm122/torchda/blob/main/examples/variational_methods.ipynb) | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/acse-jm122/torchda/blob/main/examples/variational_methods.ipynb) [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/acse-jm122/torchda/blob/main/examples/variational_methods.ipynb) |
 | [Testing Demo of Variational Methods on Shallow Water Model](https://github.com/acse-jm122/torchda/blob/main/examples/shallow_water_example/models.ipynb) | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/acse-jm122/torchda/blob/main/examples/shallow_water_example/models.ipynb) [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/acse-jm122/torchda/blob/main/examples/shallow_water_example/models.ipynb) |
 
+Updates
+-------
+* Support all torch native optimizers
+* Support early stopping for optimization steps in 3D/4D-Var
+* Automatic conversion to sparse matrices for sparse `B` or `R` in 3D/4D-Var
+* Remove `logging` module dependency
+
 Package Dependencies
 --------------------
 * Python 3.10 or later
