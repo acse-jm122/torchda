@@ -51,6 +51,7 @@ def apply_3DVar(
     max_iterations: int = 1000,
     early_stop: tuple[int, int | float] | None = None,
     record_log: bool = True,
+    comp_postcov: bool = False,
 ) -> tuple[torch.Tensor, dict[str, list]]:
     r"""
     Implementation of the 3D-Var (Three-Dimensional Variational) assimilation.
@@ -103,6 +104,11 @@ def apply_3DVar(
     record_log : bool, optional
         Whether to record and print logs for iteration progress.
         Default is True.
+
+    comp_postcov : bool, optional
+        Whether to compute the covariance matrix of
+        a posteriori analysis errors.
+        Default is False.
 
     Returns
     -------
@@ -162,13 +168,27 @@ def apply_3DVar(
     optimizer = optimizer_cls([new_x0], **optimizer_args)
     batch_size = xb_inner.size(0)
 
+    if comp_postcov:
+        postcovs = [0] * y_inner.shape[0]
+        x0_dim = new_x0.numel()
+        if int(torch.__version__[0]) >= 2:
+            jacobian = (
+                torch.func.jacrev(H)
+                if x0_dim >= y_inner[0].numel()
+                else torch.func.jacfwd(H)
+            )
+        else:
+            from functools import partial
+
+            jacobian = partial(torch.autograd.functional.jacobian, H)
+
+    log_template = (
+        "Timestamp: {timestamp}, "
+        "Iterations: {iteration}, J: {loss_J}, "
+        "Norm of J gradient: {J_grad_norm}"
+    )
     log_file = None
     try:
-        log_template = (
-            "Timestamp: {timestamp}, "
-            "Iterations: {iteration}, J: {loss_J}, "
-            "Norm of J gradient: {J_grad_norm}"
-        )
         if record_log:
             # Set up logging with a timestamp in the log file name
             timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S.%f")
@@ -221,6 +241,18 @@ def apply_3DVar(
         if log_file:
             log_file.close()
 
+    if comp_postcov:
+        with torch.no_grad():
+            for i in range(batch_size):
+                one_x0 = new_x0[i].ravel()
+                H_mat = torch.squeeze(jacobian(one_x0))
+                postcovs[i] = (
+                    torch.eye(x0_dim)
+                    - B
+                    @ H_mat.T
+                    @ torch.linalg.solve((H_mat @ B @ H_mat.T) + R, H_mat)
+                ) @ B
+        return latest_x0, intermediate_results, postcovs
     return latest_x0, intermediate_results
 
 
@@ -242,6 +274,7 @@ def apply_4DVar(
     max_iterations: int = 1000,
     early_stop: tuple[int, int | float] | None = None,
     record_log: bool = True,
+    comp_postcov: bool = False,
 ) -> tuple[torch.Tensor, dict[str, list]]:
     r"""
     Implementation of the 4D-Var (Four-Dimensional Variational) assimilation.
@@ -315,6 +348,11 @@ def apply_4DVar(
         Whether to record and print logs for iteration progress.
         Default is True.
 
+    comp_postcov : bool, optional
+        Whether to compute the covariance matrix of
+        a posteriori analysis errors.
+        Default is False.
+
     Returns
     -------
     x_optimal : torch.Tensor
@@ -383,13 +421,27 @@ def apply_4DVar(
     optimizer = optimizer_cls([new_x0], **optimizer_args)
     device = xb.device
 
+    if comp_postcov:
+        postcovs = [0] * y.shape[0]
+        x0_dim = new_x0.numel()
+        if int(torch.__version__[0]) >= 2:
+            jacobian = (
+                torch.func.jacrev(H)
+                if x0_dim >= y[0].numel()
+                else torch.func.jacfwd(H)
+            )
+        else:
+            from functools import partial
+
+            jacobian = partial(torch.autograd.functional.jacobian, H)
+
+    log_template = (
+        "Timestamp: {timestamp}, "
+        "Iterations: {iteration}, Jb: {loss_Jb}, Jo: {loss_Jo}, "
+        "J: {loss_J}, Norm of J gradient: {J_grad_norm}"
+    )
     log_file = None
     try:
-        log_template = (
-            "Timestamp: {timestamp}, "
-            "Iterations: {iteration}, Jb: {loss_Jb}, Jo: {loss_Jo}, "
-            "J: {loss_J}, Norm of J gradient: {J_grad_norm}"
-        )
         if record_log:
             # Set up logging with a timestamp in the log file name
             timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S.%f")
@@ -458,4 +510,31 @@ def apply_4DVar(
         if log_file:
             log_file.close()
 
+    if comp_postcov:
+        with torch.no_grad():
+            H_mat = torch.squeeze(jacobian(new_x0.ravel()))
+            postcovs[0] = (
+                torch.eye(x0_dim)
+                - B
+                @ H_mat.T
+                @ torch.linalg.solve((H_mat @ B @ H_mat.T) + R, H_mat)
+            ) @ B
+            current_time = time_obs[0]
+            x = new_x0
+            for iobs, (time_ibos, gap) in enumerate(
+                zip(time_obs[1:], gaps), start=1
+            ):
+                time_fw = torch.linspace(
+                    current_time, time_ibos, gap + 1, device=device
+                )
+                x = M(x, time_fw, *args)[-1]
+                H_mat = torch.squeeze(jacobian(x.ravel()))
+                postcovs[iobs] = (
+                    torch.eye(x0_dim)
+                    - B
+                    @ H_mat.T
+                    @ torch.linalg.solve((H_mat @ B @ H_mat.T) + R, H_mat)
+                ) @ B
+                current_time = time_ibos
+        return latest_x0, intermediate_results, postcovs
     return latest_x0, intermediate_results

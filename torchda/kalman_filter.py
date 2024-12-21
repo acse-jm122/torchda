@@ -149,7 +149,7 @@ def apply_KF(
         if int(torch.__version__[0]) >= 2:
             jacobian = (
                 torch.func.jacrev(H)
-                if x0.numel() >= y[0].numel()
+                if x_dim >= y[0].numel()
                 else torch.func.jacfwd(H)
             )
         else:
@@ -173,7 +173,7 @@ def apply_KF(
 
         # update
         x = X[-1]
-        H_mat = jacobian(x) if isinstance(H, Callable) else H
+        H_mat = torch.squeeze(jacobian(x)) if isinstance(H, Callable) else H
         K = (H_mat @ P0 @ H_mat.T) + R
         w = torch.linalg.solve(K, y[iobs] - (H_mat @ x))
         x = x + (P0 @ H_mat.T @ w)
@@ -199,6 +199,7 @@ def apply_EnKF(
     y: torch.Tensor,
     *args,
     start_time: float = 0.0,
+    comp_postcov: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     r"""
     Implementation of the Ensemble Kalman Filter
@@ -270,6 +271,10 @@ def apply_EnKF(
     start_time : float, optional
         The starting time of the filtering process. Default is 0.0.
 
+    comp_postcov : bool, optional
+        Set whether to compute the covariance matrix of
+        a posteriori analysis errors.
+
     Returns
     -------
     x_ave : torch.Tensor
@@ -323,6 +328,20 @@ def apply_EnKF(
         ).sample([Ne])
     ).to(device=device)
 
+    if comp_postcov:
+        postcovs = [0] * y.shape[0]
+        if isinstance(H, Callable):
+            if int(torch.__version__[0]) >= 2:
+                jacobian = (
+                    torch.func.jacrev(H)
+                    if x_dim >= y[0].numel()
+                    else torch.func.jacfwd(H)
+                )
+            else:
+                from functools import partial
+
+                jacobian = partial(torch.autograd.functional.jacobian, H)
+
     # constants
     ONE_OVER_NE = 1.0 / Ne
     ONE_OVER_NE_MINUS_ONE = 1.0 / (Ne - 1.0)
@@ -358,6 +377,18 @@ def apply_EnKF(
                 + R
             )
             Pxz = ONE_OVER_NE_MINUS_ONE * ((X - X_mean).T @ Xh_minus_z_mean)
+            if comp_postcov:
+                X_minus_X_mean = X - X_mean
+                Pe = ONE_OVER_NE_MINUS_ONE * (
+                    X_minus_X_mean.T @ X_minus_X_mean
+                )
+                H_mat = torch.squeeze(jacobian(X_mean))
+                postcovs[iobs] = (
+                    torch.eye(x_dim)
+                    - Pe
+                    @ H_mat.T
+                    @ torch.linalg.solve((H_mat @ Pe @ H_mat.T) + R, H_mat)
+                ) @ Pe
             # Update
             X = X + (observations - Xh) @ torch.linalg.solve(Pzz, Pxz.T)
         else:  # isinstance(H, torch.Tensor)
@@ -367,10 +398,16 @@ def apply_EnKF(
             K = (H @ Pe @ H.T) + R
             # Solve
             w = torch.linalg.solve(K, observations.T - (H @ X.T))
+            if comp_postcov:
+                postcovs[iobs] = (
+                    torch.eye(x_dim) - Pe @ H.T @ torch.linalg.solve(K, H)
+                ) @ Pe
             # Update
             X = X + (Pe @ H.T @ w).T
         running_mean = ONE_OVER_NE * running_mean
         x_ave[istart:istop] = running_mean
         current_time = time_obs_iobs
 
+    if comp_postcov:
+        return x_ave, x_ens, postcovs
     return x_ave, x_ens

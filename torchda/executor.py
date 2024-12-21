@@ -126,6 +126,7 @@ class _Executor:
             self.__parameters.background_state,
             self.__parameters.observations,
             *self.__parameters.args,
+            comp_postcov=self.__parameters.comp_postcov,
             start_time=self.__parameters.start_time,
         )
 
@@ -151,6 +152,7 @@ class _Executor:
             self.__parameters.max_iterations,
             self.__parameters.early_stop,
             self.__parameters.record_log,
+            self.__parameters.comp_postcov,
         )
 
     def __call_apply_4DVar(self) -> tuple[torch.Tensor, dict[str, list]]:
@@ -179,6 +181,7 @@ class _Executor:
             max_iterations=self.__parameters.max_iterations,
             early_stop=self.__parameters.early_stop,
             record_log=self.__parameters.record_log,
+            comp_postcov=self.__parameters.comp_postcov,
         )
 
     def __setup_device(self) -> None:
@@ -284,30 +287,32 @@ class _Executor:
         algorithm = self.__parameters.algorithm
         if algorithm is Algorithms.EnKF:
             self.__check_EnKF_parameters()
-            x_ave, x_ens = self.__call_apply_EnKF()
+            results = self.__call_apply_EnKF()
             self.__results = {
-                "average_ensemble_all_states": x_ave,
-                "each_ensemble_all_states": x_ens,
+                "average_ensemble_all_states": results[0],  # x_ave
+                "each_ensemble_all_states": results[1],  # x_ens
             }
         elif algorithm is Algorithms.Var3D:
             self.__check_3DVar_parameters()
-            x0, intermediate_results = self.__call_apply_3DVar()
+            results = self.__call_apply_3DVar()
             self.__results = {
-                "assimilated_state": x0,
-                "intermediate_results": intermediate_results,
+                "assimilated_state": results[0],  # x0
+                "intermediate_results": results[1],  # intermediate_results
             }
         elif algorithm is Algorithms.Var4D:
             self.__check_4DVar_parameters()
-            x0, intermediate_results = self.__call_apply_4DVar()
+            results = self.__call_apply_4DVar()
             self.__results = {
-                "assimilated_state": x0,
-                "intermediate_results": intermediate_results,
+                "assimilated_state": results[0],  # x0
+                "intermediate_results": results[1],  # intermediate_results
             }
         else:
             raise AttributeError(
                 f"Unspported Algorithm: {algorithm} "
                 "(Only support [EnKF, Var3D, Var4D])"
             )
+        if self.__parameters.comp_postcov:
+            self.__results["APosterioriCovariance"] = results[-1]
         return deepcopy(self.__results)
 
     def get_results_dict(self) -> dict[str, torch.Tensor | dict[str, list]]:

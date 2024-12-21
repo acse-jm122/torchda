@@ -110,6 +110,10 @@ class CaseBuilder:
     set_record_log(record_log: bool) -> CaseBuilder:
         Set whether to record and print log messages during execution.
 
+    set_compute_APosterioriCovariance(comp_postcov: bool) -> CaseBuilder:
+        Set whether to compute the covariance matrix of
+        a posteriori analysis errors.
+
     execute() -> dict[str, torch.Tensor | dict[str, list]]:
         Execute the data assimilation case and return the results.
 
@@ -395,6 +399,16 @@ class CaseBuilder:
                 f"record_log must be a bool, given {type(record_log)=}"
             )
         self.__parameters.record_log = record_log
+        return self
+
+    def set_compute_APosterioriCovariance(
+        self, comp_postcov: bool
+    ) -> "CaseBuilder":
+        if not isinstance(comp_postcov, bool):
+            raise TypeError(
+                f"comp_postcov must be a bool, given {type(comp_postcov)=}"
+            )
+        self.__parameters.comp_postcov = comp_postcov
         return self
 
     def execute(self) -> dict[str, torch.Tensor | dict[str, list]]:

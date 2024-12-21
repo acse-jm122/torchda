@@ -88,6 +88,11 @@ class Parameters:
         Whether to record and print logs for iteration progress.
         Default is True.
 
+    comp_postcov : bool, optional
+        Whether to compute the covariance matrix of
+        a posteriori analysis errors.
+        Default is False.
+
     args : tuple, optional
         Additional arguments to pass to state transition function.
 
@@ -127,4 +132,5 @@ class Parameters:
     max_iterations: int = 1000
     early_stop: tuple[int, int | float] | None = None
     record_log: bool = True
+    comp_postcov: bool = False
     args: tuple = ()
